@@ -25,5 +25,4 @@ router.post('/login/email', [
 ],
     loginWithEmail)
 
-
 export default router;
