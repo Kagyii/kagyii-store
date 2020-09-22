@@ -2,7 +2,7 @@ import express from 'express';
 import validator from 'express-validator';
 
 import validateToken from '../middlewares/validate-token.js';
-import { create } from '../controllers/user-profile.js';
+import { create, get } from '../controllers/user-profile.js';
 
 const router = express.Router();
 
@@ -13,4 +13,5 @@ router.post('/create', [
     validator.body('phone').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required phone').isArray({ min: 1, max: 2 }).withMessage('Invalid phone')
 ], validateToken, create);
 
+router.get('/get', validateToken, get);
 export default router;

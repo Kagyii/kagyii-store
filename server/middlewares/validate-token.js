@@ -16,8 +16,11 @@ const validateToken = async (req, res, next) => {
             const user = await User.findById(userID);
             if (user) {
                 const isValidToken = user.valid_token.includes(authToken);
+
                 if (isValidToken) {
-                    req.decodedToken = decodedToken;
+                    req.profile_id = user.profile_id;
+                    req.shop_id = user.shop_id;
+                    req.decoded_token = decodedToken;
                     return next();
                 } else {
                     let error = new Error('Token was no longer valid');

@@ -3,9 +3,9 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    email: { type: String, default: null },
-    password: { type: String, default: null },
-    provider_user_id: { type: String, default: null },
+    email: { type: String },
+    password: { type: String },
+    provider_user_id: { type: String },
     profile_setup: { type: Boolean, default: false },
     verified: { type: Boolean, default: false },
     profile_id: { type: mongoose.Schema.Types.ObjectId, default: null },
