@@ -8,7 +8,8 @@ const userSchema = new Schema({
     provider_user_id: { type: String },
     profile_setup: { type: Boolean, default: false },
     verified: { type: Boolean, default: false },
-    profile_id: { type: mongoose.Schema.Types.ObjectId, default: null },
+    profile_id: { type: Schema.Types.ObjectId },
+    shop_id: { type: Schema.Types.ObjectId },
     valid_token: [String]
 });
 

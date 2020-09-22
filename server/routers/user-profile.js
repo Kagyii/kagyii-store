@@ -14,4 +14,5 @@ router.post('/create', [
 ], validateToken, create);
 
 router.get('/get', validateToken, get);
+
 export default router;
