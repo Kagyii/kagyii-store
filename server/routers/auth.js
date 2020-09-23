@@ -19,8 +19,8 @@ router.post('/sign-up/email', [
     signUpWithEmail);
 
 router.post('/login/providers', [
-    validator.body('access_token').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required access token').isString().withMessage('Invalid token')
-
+    validator.body('access_token').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required access token').isString().withMessage('Invalid token'),
+    validator.body('access_token').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required access token').isString().isIn(['apple', 'facebook']).withMessage('Invalid provider name')
 ],
     signInOrLoginWithProviders);
 
