@@ -95,6 +95,49 @@ export const edit = async (req, res, next) => {
         return next(err);
     }
 
+    const profileID = req.params.profile_id;
+    const name = req.body.name;
+    const phone = req.body.phone;
+    const address = req.body.address;
+    const userProfileUpdate = {};
 
+    if (req.params.profile_id != req.profile_id) {
+        let error = new Error('permission error');
+        error.status = 0;
+        return next(error);
+    }
+
+    if (name) {
+        userProfileUpdate.name = name;
+    }
+
+    if (address) {
+        userProfileUpdate.address = address;
+    }
+
+    if (phone) {
+        userProfileUpdate.phone = phone;
+    }
+
+    try {
+
+        if (Object.keys(userProfileUpdate).length != 0) {
+            const userProfile = await UserProfile.findByIdAndUpdate(profileID, userProfileUpdate);
+            return res.json({
+                status: 1,
+                message: 'success'
+            });
+        } else {
+            let error = new Error('no update data');
+            error.status = 0;
+            return next(error);
+        }
+
+    } catch (err) {
+        console.log(err);
+        let error = new Error('some error');
+        error.status = 0;
+        return next(error);
+    }
 
 }

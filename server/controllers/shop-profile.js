@@ -119,17 +119,15 @@ export const edit = async (req, res, next) => {
         return next(err);
     }
 
-    let shopID;
+    const shopID = req.params.shop_id;
 
-    if (req.params.shop_id == req.shop_id) {
-        shopID = req.params.shop_id;
-    } else {
+    if (req.params.shop_id != req.shop_id) {
         let error = new Error('permission error');
         error.status = 0;
         return next(error);
     }
 
-    let shopProfileUpdate = {};
+    const shopProfileUpdate = {};
 
     const name = req.body.name;
     const preDefinedType = req.body.pre_defined_type;
@@ -166,8 +164,8 @@ export const edit = async (req, res, next) => {
 
     try {
 
-        let s3CoverImg = { key: null, location: null };
-        let s3ProfileImg = { key: null, location: null };
+        let s3CoverImg = {};
+        let s3ProfileImg = {};
 
         if (coverImg) {
             s3CoverImg = await uploadImage(coverImg, shopProfileBucket, 'cover-images/');
@@ -194,8 +192,7 @@ export const edit = async (req, res, next) => {
 
             return res.json({
                 status: 1,
-                message: 'Success',
-                data: shopProfile
+                message: 'Success'
             });
         } else {
             let error = new Error('no edit data');
