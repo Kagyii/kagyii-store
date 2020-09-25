@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const suggestionSchema = new Schema({
-    name: { type: String, required: true },
+    name: { type: String, required: true, unique: true },
     type: { type: String, required: true }
 });
 

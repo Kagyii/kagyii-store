@@ -1,6 +1,6 @@
 import validator from 'express-validator';
 
-import Item from '../models/item.js';
+import ShopItem from '../models/item.js';
 import ShopProfile from '../models/shop-profile.js';
 import { uploadImage } from '../aws/s3.js'
 
@@ -44,7 +44,7 @@ export const add = async (req, res, next) => {
 
         const s3ItemImg = await uploadImage(image, shopItemBucket, `${shopID}/`);
 
-        const item = new Item({
+        const item = new ShopItem({
             name: name,
             image_key: s3ItemImg.key,
             image_location: s3ItemImg.location,

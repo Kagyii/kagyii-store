@@ -29,6 +29,7 @@ export const create = async (req, res, next) => {
     const userDefinedType = req.body.user_defined_type;
     const about = req.body.about;
     const phone = req.body.phone;
+    const city = req.body.city;
     const address = req.body.address;
     const profileImg = req.body.profile_image;
     const coverImg = req.body.cover_image;
@@ -49,6 +50,7 @@ export const create = async (req, res, next) => {
             user_defined_type: userDefinedType,
             about: about,
             address: address,
+            city: city,
             phone: phone,
             profile_img_key: s3ProfileImg.key,
             profile_img_location: s3ProfileImg.location,
@@ -75,7 +77,7 @@ export const create = async (req, res, next) => {
 }
 
 
-export const get = async (req, res, next) => {
+export const getById = async (req, res, next) => {
     const validationErr = validator.validationResult(req);
 
     if (!validationErr.isEmpty()) {
@@ -240,4 +242,36 @@ export const createCatalouge = async (req, res, next) => {
         error.status = 0;
         return next(error);
     }
+}
+
+
+export const get = async (req, res, next) => {
+    const validationErr = validator.validationResult(req);
+
+    if (!validationErr.isEmpty()) {
+        let err = new Error(validationErr.errors[0].msg);
+        err.status = 0;
+        return next(err);
+    }
+
+    const type = req.query.type;
+
+    if (type) {
+        const shopProfile = await ShopProfile.find({ pre_defined_type: type });
+        return res.json({
+            status: 1,
+            message: 'success',
+            data: shopProfile
+        });
+    } else {
+
+        const shopProfile = await ShopProfile.find({});
+
+        return res.json({
+            status: 1,
+            message: 'success',
+            data: shopProfile
+        })
+    }
+
 }

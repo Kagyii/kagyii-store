@@ -14,7 +14,7 @@ const itemSchema = new Schema({
     shop_id: { type: Schema.Types.ObjectId, required: true }
 });
 
-const Item = mongoose.model('shop_item', itemSchema);
+const ShopItem = mongoose.model('shop_item', itemSchema);
 
-export default Item;
+export default ShopItem;
 

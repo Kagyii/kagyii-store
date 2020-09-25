@@ -2,7 +2,7 @@ import express from 'express';
 import validator from 'express-validator';
 
 import validateToken from '../middlewares/validate-token.js';
-import { create, get, edit, createCatalouge } from '../controllers/shop-profile.js';
+import { create, getById, edit, createCatalouge, get } from '../controllers/shop-profile.js';
 
 const router = express.Router();
 
@@ -12,15 +12,19 @@ router.post('', [
     validator.body('user_defined_type').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required user defined type').isString().withMessage('Invalid user defined type'),
     validator.body('about').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required about').isString().withMessage('Invalid about'),
     validator.body('phone').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required phone').isArray({ min: 1, max: 3 }).withMessage('Invalid phone'),
+    validator.body('city').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required city').isString().withMessage('Invalid city'),
     validator.body('address').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required address').isString().withMessage('Invalid address'),
     validator.body('profile_image').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required profile image').isBase64().withMessage('Invalid profile image'),
     validator.body('cover_image').optional().isBase64().withMessage('Invalid cover image')
 ], validateToken, create);
 
+router.get('', [
+    validator.query('type').optional().isMongoId().withMessage('Invalid category')
+], get);
 
 router.get('/:shop_id', [
     validator.param('shop_id').isMongoId().withMessage('Invalid profile id')
-], get);
+], getById);
 
 router.put('/:shop_id', [
     validator.param('shop_id').isMongoId().withMessage('Invalid profile id'),

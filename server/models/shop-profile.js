@@ -13,6 +13,7 @@ const shopSchema = new Schema({
     about: { type: String },
     address: { type: String, required: true },
     phone: { type: [String], required: true },
+    city: { type: Schema.Types.ObjectId, required: true },
     profile_img_location: { type: String, required: true },
     profile_img_key: { type: String, required: true },
     cover_img_location: { type: String },
