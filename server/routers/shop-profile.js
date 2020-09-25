@@ -2,7 +2,7 @@ import express from 'express';
 import validator from 'express-validator';
 
 import validateToken from '../middlewares/validate-token.js';
-import { create, get, edit } from '../controllers/shop-profile.js';
+import { create, get, edit, createCatalouge } from '../controllers/shop-profile.js';
 
 const router = express.Router();
 
@@ -23,6 +23,7 @@ router.get('/:shop_id', [
 ], get);
 
 router.put('/:shop_id', [
+    validator.param('shop_id').isMongoId().withMessage('Invalid profile id'),
     validator.body('name').optional().isString().withMessage('Invalid name'),
     validator.body('pre_defined_type').optional().isMongoId().withMessage('Invalid predefined type'),
     validator.body('user_defined_type').optional().isString().withMessage('Invalid user defined type'),
@@ -33,5 +34,20 @@ router.put('/:shop_id', [
     validator.body('cover_image').optional().isBase64().withMessage('Invalid cover image')
 ], validateToken, edit)
 
+router.post('/:shop_id/catalouge', [
+    validator.param('shop_id').isMongoId().withMessage('Invalid shop id'),
+    validator.body('name').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required name').isString().withMessage('Invalid name')
+], validateToken, createCatalouge);
+
+// router.put('/:shop_id/catalouge', [
+//     validator.param('shop_id').isMongoId().withMessage('Invalid shop id'),
+//     validator.body('name').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required name').isString().withMessage('Invalid name'),
+//     validator.body('catalouge_id').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required catalouge id').isMongoId().withMessage('Invalid catalouge id')
+// ], validateToken);
+
+// router.delete('/:shop_id/catalouge', [
+//     validator.param('shop_id').isMongoId().withMessage('Invalid shop id'),
+//     validator.body('catalouge_id').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required catalouge id').isMongoId().withMessage('Invalid catalouge id')
+// ], validateToken)
 
 export default router;

@@ -207,7 +207,37 @@ export const edit = async (req, res, next) => {
         error.status = 0;
         return next(error);
     }
+}
 
+export const createCatalouge = async (req, res, next) => {
+    const validationErr = validator.validationResult(req);
 
+    if (!validationErr.isEmpty()) {
+        let err = new Error(validationErr.errors[0].msg);
+        err.status = 0;
+        return next(err);
+    }
 
+    const shopID = req.params.shop_id;
+    const name = req.body.name;
+
+    if (req.params.shop_id != req.shop_id) {
+        let error = new Error('permission error');
+        error.status = 0;
+        return next(error);
+    }
+
+    try {
+        await ShopProfile.updateOne({ _id: shopID }, { $push: { catalouge: { name: name } } });
+
+        return res.json({
+            status: 1,
+            message: 'success'
+        })
+    } catch (err) {
+        console.log(err);
+        let error = new Error('some errors');
+        error.status = 0;
+        return next(error);
+    }
 }
