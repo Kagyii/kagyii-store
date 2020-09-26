@@ -34,7 +34,7 @@ export const add = async (req, res, next) => {
     try {
 
         if (category) {
-            const shopProfile = await ShopProfile.findOne({ 'catalouge._id': category });
+            const shopProfile = await ShopProfile.findOne({ 'catalouge._id': category }).exec();
             if (!shopProfile) {
                 let error = new Error('catalouge does not exist');
                 error.status = 0;

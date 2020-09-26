@@ -19,7 +19,7 @@ const shopSchema = new Schema({
     cover_img_location: { type: String },
     cover_img_key: { type: String },
     catalouge: [catalougeSchema]
-});
+}, { timestamps: true });
 
 const ShopProfile = mongoose.model('shop', shopSchema);
 

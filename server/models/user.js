@@ -11,7 +11,7 @@ const userSchema = new Schema({
     profile_id: { type: Schema.Types.ObjectId },
     shop_id: { type: Schema.Types.ObjectId },
     valid_token: [String]
-});
+}, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
 

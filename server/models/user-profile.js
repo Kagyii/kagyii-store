@@ -6,7 +6,7 @@ const userProfileSchema = new Schema({
     name: { type: String, required: true },
     address: { type: [String], required: true },
     phone: { type: [String], required: true }
-});
+}, { timestamps: true });
 
 const UserProfile = mongoose.model('User_Profile', userProfileSchema);
 

@@ -59,7 +59,7 @@ export const create = async (req, res, next) => {
         });
 
         const shopProfileDetails = await shopProfile.save();
-        await User.updateOne({ _id: userID }, { shop_id: shopProfileDetails._id });
+        await User.updateOne({ _id: userID }, { shop_id: shopProfileDetails._id }).exec();
 
         return res.json({
             status: 1,
@@ -90,7 +90,7 @@ export const getById = async (req, res, next) => {
 
     try {
 
-        const shopProfile = await ShopProfile.findById(shopID);
+        const shopProfile = await ShopProfile.findById(shopID).exec();
 
         if (shopProfile) {
             return res.json({
@@ -182,7 +182,7 @@ export const edit = async (req, res, next) => {
         }
 
         if (Object.keys(shopProfileUpdate).length != 0) {
-            const shopProfile = await ShopProfile.findByIdAndUpdate(shopID, shopProfileUpdate);
+            const shopProfile = await ShopProfile.findByIdAndUpdate(shopID, shopProfileUpdate).exec();
 
             if (shopProfileUpdate.cover_img_key) {
                 deleteImage(shopProfile.cover_img_key, shopProfileBucket);
@@ -230,7 +230,7 @@ export const createCatalouge = async (req, res, next) => {
     }
 
     try {
-        await ShopProfile.updateOne({ _id: shopID }, { $push: { catalouge: { name: name } } });
+        await ShopProfile.updateOne({ _id: shopID }, { $push: { catalouge: { name: name } } }).exec();
 
         return res.json({
             status: 1,
@@ -255,9 +255,10 @@ export const get = async (req, res, next) => {
     }
 
     const type = req.query.type;
+    const last
 
     if (type) {
-        const shopProfile = await ShopProfile.find({ pre_defined_type: type });
+        const shopProfile = await ShopProfile.find({ pre_defined_type: type }).exec();
         return res.json({
             status: 1,
             message: 'success',
@@ -265,7 +266,7 @@ export const get = async (req, res, next) => {
         });
     } else {
 
-        const shopProfile = await ShopProfile.find({});
+        const shopProfile = await ShopProfile.find({ createdAt: { $lte: req.query.time } }).exec();
 
         return res.json({
             status: 1,

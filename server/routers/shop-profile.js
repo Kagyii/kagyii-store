@@ -19,15 +19,15 @@ router.post('', [
 ], validateToken, create);
 
 router.get('', [
-    validator.query('type').optional().isMongoId().withMessage('Invalid category')
+    validator.query('type').optional().isMongoId().withMessage('Invalid type')
 ], get);
 
 router.get('/:shop_id', [
-    validator.param('shop_id').isMongoId().withMessage('Invalid profile id')
+    validator.param('shop_id').isMongoId().withMessage('Invalid shop id')
 ], getById);
 
 router.put('/:shop_id', [
-    validator.param('shop_id').isMongoId().withMessage('Invalid profile id'),
+    validator.param('shop_id').isMongoId().withMessage('Invalid shop id'),
     validator.body('name').optional().isString().withMessage('Invalid name'),
     validator.body('pre_defined_type').optional().isMongoId().withMessage('Invalid predefined type'),
     validator.body('user_defined_type').optional().isString().withMessage('Invalid user defined type'),

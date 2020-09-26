@@ -27,7 +27,7 @@ export const create = async (req, res, next) => {
         const user = await User.findById(userID);
         if (!user.profile_id) {
             const profile = await userProfile.save();
-            await User.updateOne({ _id: userID }, { profile_setup: true, profile_id: profile._id });
+            await User.updateOne({ _id: userID }, { profile_setup: true, profile_id: profile._id }).exec();
             return res.json({
                 status: 1,
                 message: 'Success',
@@ -63,7 +63,7 @@ export const get = async (req, res, next) => {
     const profileID = req.params.profile_id;
 
     try {
-        const userProfile = await UserProfile.findById(profileID);
+        const userProfile = await UserProfile.findById(profileID).exec();
         if (userProfile) {
             return res.json({
                 status: 1,
@@ -122,7 +122,7 @@ export const edit = async (req, res, next) => {
     try {
 
         if (Object.keys(userProfileUpdate).length != 0) {
-            const userProfile = await UserProfile.findByIdAndUpdate(profileID, userProfileUpdate);
+            await UserProfile.updateOne({ _id: profileID }, userProfileUpdate).exec();
             return res.json({
                 status: 1,
                 message: 'success'

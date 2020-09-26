@@ -12,7 +12,7 @@ const itemSchema = new Schema({
     promo_price: { type: Number },
     category: [Schema.Types.ObjectId],
     shop_id: { type: Schema.Types.ObjectId, required: true }
-});
+}, { timestamps: true });
 
 const ShopItem = mongoose.model('shop_item', itemSchema);
 

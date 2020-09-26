@@ -7,7 +7,7 @@ export const get = async (req, res, next) => {
     const type = req.query.type;
 
     try {
-        const suggestion = await Suggestion.find({ type: type });
+        const suggestion = await Suggestion.find({ type: type }).exec();
 
         return res.json({
             status: 1,
