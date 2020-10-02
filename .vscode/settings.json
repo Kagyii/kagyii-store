@@ -1,0 +1,7 @@
+{
+    "editor.fontFamily": "Consolas",
+    "editor.wordWrap": "on",
+    "files.exclude": {
+        "package-lock.json": true
+    }
+}

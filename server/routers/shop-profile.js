@@ -19,7 +19,9 @@ router.post('', [
 ], validateToken, create);
 
 router.get('', [
-    validator.query('type').optional().isMongoId().withMessage('Invalid type')
+    validator.query('type').optional().isMongoId().withMessage('Invalid type'),
+    validator.query('last_shop').optional().isMongoId().withMessage('Invalid shop id'),
+    validator.query()
 ], get);
 
 router.get('/:shop_id', [

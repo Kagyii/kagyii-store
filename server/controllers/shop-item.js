@@ -2,7 +2,7 @@ import validator from 'express-validator';
 
 import ShopItem from '../models/item.js';
 import ShopProfile from '../models/shop-profile.js';
-import { uploadImage } from '../aws/s3.js'
+import { uploadImage } from '../aws/s3.js';
 
 const shopItemBucket = 'kagyii-store-shop-item';
 
@@ -14,6 +14,7 @@ export const add = async (req, res, next) => {
         err.status = 0;
         return next(err);
     }
+
 
     const name = req.body.name;
     const image = req.body.image;

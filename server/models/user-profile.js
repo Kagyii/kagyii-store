@@ -8,6 +8,6 @@ const userProfileSchema = new Schema({
     phone: { type: [String], required: true }
 }, { timestamps: true });
 
-const UserProfile = mongoose.model('User_Profile', userProfileSchema);
+const UserProfile = mongoose.model('user_profile', userProfileSchema);
 
 export default UserProfile;

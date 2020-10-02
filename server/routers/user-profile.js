@@ -6,7 +6,6 @@ import { create, get, edit } from '../controllers/user-profile.js';
 
 const router = express.Router();
 
-
 router.post('', [
     validator.body('name').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required name').isString().withMessage('Invalid name'),
     validator.body('address').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required address').isArray({ min: 1, max: 2 }).withMessage('Invalid address'),
