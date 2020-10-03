@@ -210,7 +210,7 @@ export const loginWithEmail = async (req, res, next) => {
             auth_token: authToken,
             profile_setup: user.profile_setup,
             shop_id: user.shop_id,
-            profile_id: user.profile_id,
+            profile_id: user.profile_id
           },
         });
       } else {
@@ -223,6 +223,45 @@ export const loginWithEmail = async (req, res, next) => {
       error.status = 0;
       return next(error);
     }
+  } catch (err) {
+    console.log(err);
+    let error = new Error("some errors");
+    error.status = 0;
+    return next(error);
+  }
+};
+
+
+export const logout = async (req, res, next) => {
+  const validationErr = validator.validationResult(req);
+
+  if (!validationErr.isEmpty()) {
+    let err = new Error(validationErr.errors[0].msg);
+    err.status = 0;
+    return next(err);
+  }
+
+  const userID = req.decoded_token.userID;
+  const type = req.body.type;
+  const authToken = req.headers.auth_token;
+
+  let query;
+
+  if (type == 'one') {
+    query = User.updateOne({ _id: userID }, { $pull: { valid_token: authToken } });
+  } else {
+    query = User.updateOne({ _id: userID }, { $set: { valid_token: [] } });
+  }
+
+  try {
+
+    await query.exec();
+
+    return res.json({
+      status: 1,
+      message: "success"
+    });
+
   } catch (err) {
     console.log(err);
     let error = new Error("some errors");

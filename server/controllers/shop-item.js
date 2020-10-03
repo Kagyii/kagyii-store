@@ -1,6 +1,6 @@
 import validator from 'express-validator';
 
-import ShopItem from '../models/item.js';
+import ShopItem from '../models/shop-item.js';
 import ShopProfile from '../models/shop-profile.js';
 import { uploadImage } from '../aws/s3.js';
 
@@ -55,7 +55,7 @@ export const add = async (req, res, next) => {
             promo_price: promoPrice,
             category: category,
             shop_id: shopID
-        })
+        });
 
         await item.save();
 
@@ -72,15 +72,50 @@ export const add = async (req, res, next) => {
         return next(error);
     }
 
-}
+};
 
-// export const get = async (req, res, next) => {
-//     const validationErr = validator.validationResult(req);
+export const get = async (req, res, next) => {
+    const validationErr = validator.validationResult(req);
 
-//     if (!validationErr.isEmpty()) {
-//         let err = new Error(validationErr.errors[0].msg);
-//         err.status = 0;
-//         return next(err);
-//     }
+    if (!validationErr.isEmpty()) {
+        let err = new Error(validationErr.errors[0].msg);
+        err.status = 0;
+        return next(err);
+    }
 
-// }
+    const shopID = req.params.shop_id;
+    const lastItem = req.query.last_item;
+    const category = req.query.category;
+    const pageSize = 20;
+
+    let query;
+
+    if (category) {
+        if (lastItem) {
+            query = ShopItem.find({ category: category, _id: { $gt: lastItem } });
+        } else {
+            query = ShopItem.find({ category: category });
+        }
+    } else {
+        if (lastItem) {
+            query = ShopItem.find({ _id: { $gt: lastItem } });
+        } else {
+            query = ShopItem.find({});
+        }
+    }
+
+    try {
+        const shopItem = await query.sort({ createdAt: -1 }).limit(pageSize).exec();
+
+        return res.json({
+            status: 1,
+            message: 'success',
+            data: shopItem
+        });
+    } catch (err) {
+        console.log(err);
+        let error = new Error('some errors');
+        error.status = 0;
+        return next(error);
+    }
+};

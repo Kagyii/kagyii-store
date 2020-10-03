@@ -283,7 +283,7 @@ export const get = async (req, res, next) => {
 
     if (type) {
       if (lastShopID) {
-        query = ShopProfile.find({ pre_defined_type: type, id: { $gt: lastShopID } });
+        query = ShopProfile.find({ pre_defined_type: type, _id: { $gt: lastShopID } });
       } else {
         query = ShopProfile.find({ pre_defined_type: type });
       }

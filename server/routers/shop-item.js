@@ -2,7 +2,7 @@ import express from 'express';
 import validator from 'express-validator';
 
 import validateToken from '../middlewares/validate-token.js';
-import { add } from '../controllers/shop-item.js';
+import { add, get } from '../controllers/shop-item.js';
 
 const router = express.Router();
 
@@ -17,6 +17,10 @@ router.post('/:shop_id/item', [
     validator.body('image').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required image').isBase64().withMessage('Invalid image')
 ], validateToken, add);
 
-
+router.get('/:shop_id/item', [
+    validator.param('shop_id').isMongoId().withMessage('invalid shop id'),
+    validator.query('last_item').optional().isMongoId().withMessage('invalid item id'),
+    validator.query('category').optional().isMongoId().withMessage('invalid category')
+], get);
 
 export default router;

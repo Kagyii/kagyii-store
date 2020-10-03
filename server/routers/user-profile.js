@@ -16,7 +16,7 @@ router.get('/:profile_id', [
     validator.param('profile_id').isMongoId().withMessage('Invalid profile id')
 ], get);
 
-router.put('/:profile_id', [
+router.patch('/:profile_id', [
     validator.param('profile_id').isMongoId().withMessage('Invalid profile id'),
     validator.body('name').optional().isString().withMessage('Invalid name'),
     validator.body('address').optional().isArray({ min: 1, max: 2 }).withMessage('Invalid address'),
