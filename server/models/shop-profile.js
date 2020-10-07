@@ -12,6 +12,8 @@ const shopSchema = new Schema({
     user_defined_type: { type: String },
     about: { type: String },
     address: { type: String, required: true },
+    lat: { type: String },
+    lng: { type: String },
     phone: { type: [String], required: true },
     city: { type: Schema.Types.ObjectId, ref: 'suggestion', required: true },
     profile_img_location: { type: String, required: true },

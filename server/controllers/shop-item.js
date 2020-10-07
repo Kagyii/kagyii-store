@@ -1,5 +1,3 @@
-import validator from 'express-validator';
-
 import ShopItem from '../models/shop-item.js';
 import ShopProfile from '../models/shop-profile.js';
 import { uploadImage } from '../aws/s3.js';
@@ -7,23 +5,24 @@ import { uploadImage } from '../aws/s3.js';
 const shopItemBucket = 'kagyii-store-shop-item';
 
 export const add = async (req, res, next) => {
-    const validationErr = validator.validationResult(req);
-
-    if (!validationErr.isEmpty()) {
-        let err = new Error(validationErr.errors[0].msg);
-        err.status = 0;
-        return next(err);
-    }
-
 
     const name = req.body.name;
-    const image = req.body.image;
+    const images = req.body.images;
     const description = req.body.description;
     const price = req.body.price;
     const quantity = req.body.quantity;
     const category = req.body.category;
     const shopID = req.params.shop_id;
-    const promoPrice = req.body.promo_price;
+
+    let promo = {};
+
+    if (req.body.promo_percentage && req.body.promo_expiry_date && req.body.promo_price) {
+        promo = {
+            price: req.body.promo_price,
+            percentage: req.body.promo_percentage,
+            expiry_date: req.body.promo_expiry_date
+        };
+    }
 
     if (shopID != req.shop_id) {
         let error = new Error('permission error');
@@ -43,16 +42,15 @@ export const add = async (req, res, next) => {
             }
         }
 
-        const s3ItemImg = await uploadImage(image, shopItemBucket, `${shopID}/`);
+        const s3ItemImg = await uploadImage(images, shopItemBucket, `${shopID}/`);
 
         const item = new ShopItem({
             name: name,
-            image_key: s3ItemImg.key,
-            image_location: s3ItemImg.location,
+            images: s3ItemImg,
             description: description,
             price: price,
             quantity: quantity,
-            promo_price: promoPrice,
+            promo: promo,
             category: category,
             shop_id: shopID
         });
@@ -61,7 +59,9 @@ export const add = async (req, res, next) => {
 
         return res.json({
             status: 1,
-            message: 'success'
+            message: 'success',
+            s3ItemImg,
+            promo
         });
 
 
@@ -75,13 +75,6 @@ export const add = async (req, res, next) => {
 };
 
 export const get = async (req, res, next) => {
-    const validationErr = validator.validationResult(req);
-
-    if (!validationErr.isEmpty()) {
-        let err = new Error(validationErr.errors[0].msg);
-        err.status = 0;
-        return next(err);
-    }
 
     const shopID = req.params.shop_id;
     const lastItem = req.query.last_item;

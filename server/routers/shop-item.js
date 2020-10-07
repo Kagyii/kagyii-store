@@ -1,7 +1,10 @@
 import express from 'express';
 import validator from 'express-validator';
+import moment from 'moment';
+import isBase64 from 'validator/lib/isBase64.js';
 
 import validateToken from '../middlewares/validate-token.js';
+import checkValidationError from '../middlewares/check-validation-error.js';
 import { add, get } from '../controllers/shop-item.js';
 
 const router = express.Router();
@@ -10,12 +13,23 @@ router.post('/:shop_id/item', [
     validator.param('shop_id').isMongoId().withMessage('invalid shop id'),
     validator.body('name').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required name').isString().withMessage('Invalid name'),
     validator.param('category').optional().isMongoId().withMessage('invalid category'),
-    validator.body('description').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required description').isString().withMessage('Invalid description'),
+    validator.body('description').optional().isString().withMessage('invalid description'),
     validator.body('price').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required price').isInt().withMessage('Invalid price'),
-    validator.body('promo_price').optional().isInt().withMessage('Invalid promo price'),
-    validator.body('quantity').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required quantity').isInt().withMessage('Invalid name'),
-    validator.body('image').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required image').isBase64().withMessage('Invalid image')
-], validateToken, add);
+    validator.body('promo_price').optional().isInt().withMessage('Invalid promo'),
+    validator.body('promo_percentage').optional().isInt().withMessage('Invalid promo percentage'),
+    validator.body('promo_expiry_date').optional().custom(value => {
+        if (!moment(value, true).isValid()) {
+            throw false;
+        }
+        return true;
+    }).withMessage('invalid expiry date'),
+    validator.body('images').optional().isArray({ min: 1, max: 5 }).withMessage('Required image').custom(value => {
+        if (!value.every(i => { return isBase64(i); })) {
+            throw false;
+        }
+        return true;
+    }).withMessage('Bad image')
+], checkValidationError, validateToken, add);
 
 router.get('/:shop_id/item', [
     validator.param('shop_id').isMongoId().withMessage('invalid shop id'),
