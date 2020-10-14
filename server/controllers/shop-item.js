@@ -60,8 +60,7 @@ export const add = async (req, res, next) => {
         return res.json({
             status: 1,
             message: 'success',
-            s3ItemImg,
-            promo
+            data: item
         });
 
 
@@ -79,31 +78,54 @@ export const get = async (req, res, next) => {
     const shopID = req.params.shop_id;
     const lastItem = req.query.last_item;
     const category = req.query.category;
+    const catalougeString = req.query.catalouge;
     const pageSize = 20;
+    let catalouge;
+    if (catalougeString) {
+        catalouge = JSON.parse(catalougeString);
+    }
+
 
     let query;
 
     if (category) {
         if (lastItem) {
-            query = ShopItem.find({ category: category, _id: { $gt: lastItem } });
+            query = ShopItem.find({ category: category, shop_id: shopID, _id: { $gt: lastItem } });
         } else {
-            query = ShopItem.find({ category: category });
+            query = ShopItem.find({ category: category, shop_id: shopID });
         }
     } else {
         if (lastItem) {
-            query = ShopItem.find({ _id: { $gt: lastItem } });
+            query = ShopItem.find({ shop_id: shopID, _id: { $gt: lastItem } });
         } else {
-            query = ShopItem.find({});
+            query = ShopItem.find({ shop_id: shopID });
         }
     }
 
     try {
-        const shopItem = await query.sort({ createdAt: -1 }).limit(pageSize).exec();
+        const shopItems = await query.sort({ createdAt: -1 }).limit(pageSize).lean().exec();
+
+        if (category === undefined && catalouge !== undefined) {
+            shopItems.forEach((item, i) => {
+                const categoryArr = [];
+                if (item.category.length !== 0) {
+                    item.category.forEach((categoryID) => {
+                        catalouge.forEach((categoryObj, j) => {
+                            if (categoryObj._id == categoryID) {
+                                categoryArr.push(categoryObj);
+                            }
+                        });
+
+                    });
+                    shopItems[i].category = categoryArr;
+                }
+            });
+        }
 
         return res.json({
             status: 1,
             message: 'success',
-            data: shopItem
+            data: shopItems
         });
     } catch (err) {
         console.log(err);

@@ -8,9 +8,9 @@ const itemImageSchema = new Schema({
 });
 
 const promoSchema = new Schema({
-    price: { type: Number, required: true },
-    percentage: { type: Number, required: true },
-    expiry_date: { type: Date, required: true }
+    price: { type: Number },
+    percentage: { type: Number },
+    expiry_date: { type: Date }
 });
 
 
