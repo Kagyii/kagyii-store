@@ -19,7 +19,7 @@ const itemSchema = new Schema({
     images: { type: [itemImageSchema], required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
-    promo: { type: promoSchema, default: {} },
+    promo: { type: promoSchema },
     avaliable: { type: Boolean, default: true },
     pre_order: { type: String },
     category: { type: [Schema.Types.ObjectId] },

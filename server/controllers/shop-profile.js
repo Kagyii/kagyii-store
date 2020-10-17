@@ -103,16 +103,15 @@ export const getById = async (req, res, next) => {
       .exec();
 
     if (shopProfile) {
-      return res.json({
-        status: 1,
-        message: "Success",
-        data: shopProfile
-      });
-    } else {
-      let error = new Error("shop not exist");
-      error.status = 0;
-      return next(error);
+      await shopProfile.updateOne({ $inc: { popularity: 1 } }).exec();
     }
+
+    return res.json({
+      status: 1,
+      message: "Success",
+      data: shopProfile
+    });
+
   } catch (err) {
     console.log(err);
     let error = new Error("some errors");
@@ -273,29 +272,38 @@ export const get = async (req, res, next) => {
     return next(err);
   }
 
-  const lastShopID = req.query.last_shop;
-  const type = req.query.type;
   const pageSize = 20;
+  const filter = req.query.filter;
+  const sort = req.query.sort;
 
   try {
 
     let query;
 
-    if (type) {
-      if (lastShopID) {
-        query = ShopProfile.find({ pre_defined_type: type, _id: { $gt: lastShopID } });
-      } else {
-        query = ShopProfile.find({ pre_defined_type: type });
-      }
+    if (filter.shop_id && filter.type) {
+      query = ShopProfile.find({ pre_defined_type: filter.type, _id: { $lt: filter.shop_id } });
+    } else if (filter.shop_id && filter.by) {
+      query = ShopProfile.find({ _id: { $lt: filter.shop_id }, promo_expiry: { $gt: new Date() } });
+    } else if (filter.type) {
+      query = ShopProfile.find({ pre_defined_type: filter.type });
+    } else if (filter.by) {
+      query = ShopProfile.find({ promo_expiry: { $gt: new Date() } });
     } else {
-      if (lastShopID) {
-        query = ShopProfile.find({ _id: { $gt: lastShopID } });
-      } else {
-        query = ShopProfile.find({});
-      }
+      let error = new Error("Must include filter type or by");
+      error.status = 0;
+      return next(error);
     }
 
-    const shopProfiles = await query.sort({ name: -1 }).limit(pageSize).exec();
+
+    if (sort) {
+      if (sort.popular) {
+        query.sort({ popular: -1 });
+      }
+    } else {
+      query.sort({ name: -1 });
+    }
+
+    const shopProfiles = await query.limit(pageSize).exec();
 
     return res.json({
       status: 1,

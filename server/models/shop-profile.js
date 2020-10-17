@@ -1,4 +1,8 @@
 import mongoose from 'mongoose';
+import mongooseLong from 'mongoose-long';
+
+mongooseLong(mongoose);
+const { Types: { Long } } = mongoose;
 
 const Schema = mongoose.Schema;
 
@@ -20,6 +24,9 @@ const shopSchema = new Schema({
     profile_img_key: { type: String, required: true },
     cover_img_location: { type: String },
     cover_img_key: { type: String },
+    promo_expiry: { type: Date },
+    promo_percentage: { type: Number, default: 0 },
+    popularity: { type: Long, default: 0 },
     catalouge: [catalougeSchema]
 }, { timestamps: true });
 
