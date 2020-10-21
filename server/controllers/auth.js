@@ -32,7 +32,7 @@ export const signUpWithEmail = async (req, res, next) => {
       const hashPassword = await bcrypt.hash(password, bcrypt.genSaltSync());
       const auth = new User({
         email: email,
-        password: hashPassword,
+        password: hashPassword
       });
       const newUser = await auth.save();
       const authToken = jwt.sign({ userID: newUser._id }, process.env.ACCESS_TOKEN_SECRET);

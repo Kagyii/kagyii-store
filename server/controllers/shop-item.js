@@ -16,11 +16,11 @@ export const add = async (req, res, next) => {
 
     let promo = {};
 
-    if (req.body.promo_percentage && req.body.promo_expiry_date && req.body.promo_price) {
+    if (req.body.promo_percentage && req.body.promo_expiry && req.body.promo_price) {
         promo = {
             price: req.body.promo_price,
             percentage: req.body.promo_percentage,
-            expiry_date: req.body.promo_expiry_date
+            expiry: req.body.promo_expiry
         };
     }
 
@@ -41,8 +41,13 @@ export const add = async (req, res, next) => {
                 return next(error);
             }
         }
-
         const s3ItemImg = await uploadImage(images, shopItemBucket, `${shopID}/`);
+
+
+        if (promo !== {}) {
+            await ShopProfile.updateOne({ _id: shopID },
+                { promo_percentage: req.body.promo_percentage, promo_expiry: req.body.promo_expiry });
+        }
 
         const item = new ShopItem({
             name: name,

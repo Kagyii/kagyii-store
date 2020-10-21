@@ -30,6 +30,11 @@ const shopSchema = new Schema({
     catalouge: [catalougeSchema]
 }, { timestamps: true });
 
+shopSchema.index({ pre_defined_type: 1, popularity: -1, createdAt: -1 });
+shopSchema.index({ popularity: -1, promo_expiry: 1, createdAt: -1, });
+shopSchema.index({ city: 1, popularity: -1, createdAt: -1 });
+
+
 const ShopProfile = mongoose.model('shop', shopSchema);
 
 export default ShopProfile;

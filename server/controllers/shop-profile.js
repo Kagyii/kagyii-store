@@ -264,13 +264,13 @@ export const createCatalouge = async (req, res, next) => {
 };
 
 export const get = async (req, res, next) => {
-  const validationErr = validator.validationResult(req);
+  // const validationErr = validator.validationResult(req);
 
-  if (!validationErr.isEmpty()) {
-    let err = new Error(validationErr.errors[0].msg);
-    err.status = 0;
-    return next(err);
-  }
+  // if (!validationErr.isEmpty()) {
+  //   let err = new Error(validationErr.errors[0].msg);
+  //   err.status = 0;
+  //   return next(err);
+  // }
 
   const pageSize = 20;
   const filter = req.query.filter;
@@ -280,18 +280,22 @@ export const get = async (req, res, next) => {
 
     let query;
 
-    if (filter.shop_id && filter.type) {
-      query = ShopProfile.find({ pre_defined_type: filter.type, _id: { $lt: filter.shop_id } });
-    } else if (filter.shop_id && filter.by) {
-      query = ShopProfile.find({ _id: { $lt: filter.shop_id }, promo_expiry: { $gt: new Date() } });
-    } else if (filter.type) {
-      query = ShopProfile.find({ pre_defined_type: filter.type });
-    } else if (filter.by) {
-      query = ShopProfile.find({ promo_expiry: { $gt: new Date() } });
+    if (filter.created_at) {
+      if (filter.type) {
+        query = ShopProfile.find({ pre_defined_type: filter.type, _id: { $lt: filter.created_at } });
+      } else if (filter.promo) {
+        query = ShopProfile.find({ _id: { $lt: filter.created_at }, promo_expiry: { $gt: filter.promo } });
+      } else if (filter.city) {
+        query = ShopProfile.find({ city: filter.city, _id: { $lt: filter.created_at } });
+      }
     } else {
-      let error = new Error("Must include filter type or by");
-      error.status = 0;
-      return next(error);
+      if (filter.type) {
+        query = ShopProfile.find({ pre_defined_type: filter.type });
+      } else if (filter.promo) {
+        query = ShopProfile.find({ promo_expiry: { $gt: filter.promo } });
+      } else if (filter.city) {
+        query = ShopProfile.find({ city: filter.city });
+      }
     }
 
 
@@ -299,8 +303,6 @@ export const get = async (req, res, next) => {
       if (sort.popular) {
         query.sort({ popular: -1 });
       }
-    } else {
-      query.sort({ name: -1 });
     }
 
     const shopProfiles = await query.limit(pageSize).exec();

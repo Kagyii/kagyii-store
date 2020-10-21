@@ -17,7 +17,7 @@ router.post('/:shop_id/item', [
     validator.body('price').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required price').isInt().withMessage('Invalid price'),
     validator.body('promo_price').optional().isInt().withMessage('Invalid promo'),
     validator.body('promo_percentage').optional().isInt().withMessage('Invalid promo percentage'),
-    validator.body('promo_expiry_date').optional().custom(value => {
+    validator.body('promo_expiry').optional().custom(value => {
         if (!moment(value, true).isValid()) {
             throw false;
         }
