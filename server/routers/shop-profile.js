@@ -20,8 +20,22 @@ router.post('', [
 ], checkValidationError, validateToken, create);
 
 router.get('', [
-    validator.query('type').optional().isMongoId().withMessage('Invalid type'),
-    validator.query('last_shop').optional().isMongoId().withMessage('Invalid shop id')
+    validator.query('filter.type').optional().isMongoId().withMessage('Invalid type'),
+    validator.query('filter.city').optional().isMongoId().withMessage('Invalid city'),
+    validator.query('filter.latest').optional()
+        .custom(value => {
+            if (!moment(value, true).isValid()) {
+                throw false;
+            }
+            return true;
+        }).withMessage('Invalid date'),
+    validator.query('filter.promo').optional()
+        .custom(value => {
+            if (!moment(value, true).isValid()) {
+                throw false;
+            }
+            return true;
+        }).withMessage('Invalid date')
 ], checkValidationError, get);
 
 router.get('/:shop_id', [
