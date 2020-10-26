@@ -1,6 +1,5 @@
 import express from 'express';
 import validator from 'express-validator';
-import moment from 'moment';
 import isBase64 from 'validator/lib/isBase64.js';
 
 import validateToken from '../middlewares/validate-token.js';
@@ -17,12 +16,7 @@ router.post('/:shop_id/item', [
     validator.body('price').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required price').isInt().withMessage('Invalid price'),
     validator.body('promo_price').optional().isInt().withMessage('Invalid promo'),
     validator.body('promo_percentage').optional().isInt().withMessage('Invalid promo percentage'),
-    validator.body('promo_expiry').optional().custom(value => {
-        if (!moment(value, true).isValid()) {
-            throw false;
-        }
-        return true;
-    }).withMessage('invalid expiry date'),
+    validator.body('promo_expiry').optional().isISO8601().withMessage('Invalid expiry date'),
     validator.body('images').optional().isArray({ min: 1, max: 5 }).withMessage('Required image').custom(value => {
         if (!value.every(i => { return isBase64(i); })) {
             throw false;

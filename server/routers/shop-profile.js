@@ -22,20 +22,8 @@ router.post('', [
 router.get('', [
     validator.query('filter.type').optional().isMongoId().withMessage('Invalid type'),
     validator.query('filter.city').optional().isMongoId().withMessage('Invalid city'),
-    validator.query('filter.latest').optional()
-        .custom(value => {
-            if (!moment(value, true).isValid()) {
-                throw false;
-            }
-            return true;
-        }).withMessage('Invalid date'),
-    validator.query('filter.promo').optional()
-        .custom(value => {
-            if (!moment(value, true).isValid()) {
-                throw false;
-            }
-            return true;
-        }).withMessage('Invalid date')
+    validator.query('filter.latest').optional().isISO8601().withMessage('Invalid date'),
+    validator.query('filter.promo').optional().isISO8601().withMessage('Invalid promo')
 ], checkValidationError, get);
 
 router.get('/:shop_id', [
