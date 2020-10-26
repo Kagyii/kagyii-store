@@ -35,6 +35,6 @@ router.get('/:shop_id/item', [
     validator.param('shop_id').isMongoId().withMessage('invalid shop id'),
     validator.query('last_item').optional().isMongoId().withMessage('invalid item id'),
     validator.query('category').optional().isMongoId().withMessage('invalid category')
-], get);
+], checkValidationError, get);
 
 export default router;

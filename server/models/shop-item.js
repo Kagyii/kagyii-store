@@ -16,13 +16,13 @@ const promoSchema = new Schema({
 
 const itemSchema = new Schema({
     name: { type: String, required: true },
-    images: { type: [itemImageSchema], required: true },
+    images: [{ type: itemImageSchema, required: true }],
     description: { type: String, required: true },
     price: { type: Number, required: true },
     promo: { type: promoSchema },
     avaliable: { type: Boolean, default: true },
     pre_order: { type: String },
-    category: { type: [Schema.Types.ObjectId] },
+    category: [{ type: Schema.Types.ObjectId, ref: 'shop_catalouge' }],
     shop_id: { type: Schema.Types.ObjectId, required: true }
 }, { timestamps: true });
 

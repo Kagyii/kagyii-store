@@ -71,9 +71,7 @@ export const add = async (req, res, next) => {
 
     } catch (err) {
         console.log(err);
-        let error = new Error('some errors');
-        error.status = 0;
-        return next(error);
+        return next(new Error("database error"));
     }
 
 };
@@ -85,6 +83,7 @@ export const get = async (req, res, next) => {
     const category = req.query.category;
     const catalougeString = req.query.catalouge;
     const pageSize = 20;
+
     let catalouge;
     if (catalougeString) {
         catalouge = JSON.parse(catalougeString);
@@ -108,24 +107,8 @@ export const get = async (req, res, next) => {
     }
 
     try {
-        const shopItems = await query.sort({ createdAt: -1 }).limit(pageSize).lean().exec();
-
-        if (category === undefined && catalouge !== undefined) {
-            shopItems.forEach((item, i) => {
-                const categoryArr = [];
-                if (item.category.length !== 0) {
-                    item.category.forEach((categoryID) => {
-                        catalouge.forEach((categoryObj, j) => {
-                            if (categoryObj._id == categoryID) {
-                                categoryArr.push(categoryObj);
-                            }
-                        });
-
-                    });
-                    shopItems[i].category = categoryArr;
-                }
-            });
-        }
+        const shopItems = await query.sort({ createdAt: -1 }).limit(pageSize)
+            .populate({ path: 'category', select: 'name' }).exec();
 
         return res.json({
             status: 1,
@@ -134,8 +117,6 @@ export const get = async (req, res, next) => {
         });
     } catch (err) {
         console.log(err);
-        let error = new Error('some errors');
-        error.status = 0;
-        return next(error);
+        return next(new Error("database error"));
     }
 };

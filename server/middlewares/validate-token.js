@@ -23,29 +23,19 @@ const validateToken = async (req, res, next) => {
                     req.decoded_token = decodedToken;
                     return next();
                 } else {
-                    let error = new Error('Token was no longer valid');
-                    error.status = 0;
-                    return next(error);
+                    return next(new Error('Token was no longer valid'));
                 }
             } else {
-                let error = new Error('User was no longer exist');
-                error.status = 0;
-                return next(error);
+                return next(new Error('User was no longer exist'));
             }
 
         } catch (err) {
-            console.log(err);
-            err.status = 0;
             return next(err);
         }
     } else {
-        let error = new Error('Require auth token');
-        error.status = 0;
-        return next(error);
+        return next(new Error('Require auth token'));
     }
-
-
-}
+};
 
 export default validateToken;
 

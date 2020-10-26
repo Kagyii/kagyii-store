@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import { JWT, JWKS, errors } from "jose";
 import bcrypt from "bcryptjs";
-import validator from "express-validator";
 import axios from "axios";
 import dotenv from "dotenv";
 import gAuth from "google-auth-library";
@@ -11,13 +10,6 @@ import User from "../models/user.js";
 dotenv.config();
 
 export const signUpWithEmail = async (req, res, next) => {
-  const validationErr = validator.validationResult(req);
-
-  if (!validationErr.isEmpty()) {
-    let err = new Error(validationErr.errors[0].msg);
-    err.status = 0;
-    return next(err);
-  }
 
   const email = req.body.email;
   const password = req.body.password;
@@ -25,9 +17,7 @@ export const signUpWithEmail = async (req, res, next) => {
   try {
     const user = await User.findOne({ email: email }).exec();
     if (user) {
-      let error = new Error("email already exist");
-      error.status = 0;
-      return next(error);
+      return next(new Error("email already exist"));
     } else {
       const hashPassword = await bcrypt.hash(password, bcrypt.genSaltSync());
       const auth = new User({
@@ -51,19 +41,11 @@ export const signUpWithEmail = async (req, res, next) => {
     }
   } catch (err) {
     console.log(err);
-    err.status = 0;
-    return next(err);
+    return next(new Error('database error'));
   }
 };
 
 export const signInOrLoginWithProviders = async (req, res, next) => {
-  const validationErr = validator.validationResult(req);
-
-  if (!validationErr.isEmpty()) {
-    let err = new Error(validationErr.errors[0].msg);
-    err.status = 0;
-    return next(err);
-  }
 
   const accessToken = req.body.access_token;
   const providerName = req.body.provider_name;
@@ -162,29 +144,15 @@ export const signInOrLoginWithProviders = async (req, res, next) => {
     }
   } catch (err) {
     console.log(err);
-    if (
-      err instanceof errors.JOSEError &&
-      err.code === "ERR_JWS_VERIFICATION_FAILED"
-    ) {
-      let error = new Error("not a apple user");
-      error.status = 0;
-      return next(error);
+    if (err instanceof errors.JOSEError && err.code === "ERR_JWS_VERIFICATION_FAILED") {
+      return next(new Error("not a apple user"));
     } else {
-      let error = new Error("some error");
-      error.status = 0;
-      return next(error);
+      return next(new Error('database error'));
     }
   }
 };
 
 export const loginWithEmail = async (req, res, next) => {
-  const validationErr = validator.validationResult(req);
-
-  if (!validationErr.isEmpty()) {
-    let err = new Error(validationErr.errors[0].msg);
-    err.status = 0;
-    return next(err);
-  }
 
   const email = req.body.email;
   const password = req.body.password;
@@ -214,32 +182,19 @@ export const loginWithEmail = async (req, res, next) => {
           },
         });
       } else {
-        let error = new Error("password not match");
-        error.status = 0;
-        return next(error);
+        return next(new Error("password not match"));
       }
     } else {
-      let error = new Error("user not exist");
-      error.status = 0;
-      return next(error);
+      return next(new Error("user not exist"));
     }
   } catch (err) {
     console.log(err);
-    let error = new Error("some errors");
-    error.status = 0;
-    return next(error);
+    return next(new Error("database error"));
   }
 };
 
 
 export const logout = async (req, res, next) => {
-  const validationErr = validator.validationResult(req);
-
-  if (!validationErr.isEmpty()) {
-    let err = new Error(validationErr.errors[0].msg);
-    err.status = 0;
-    return next(err);
-  }
 
   const userID = req.decoded_token.userID;
   const type = req.body.type;
@@ -247,9 +202,9 @@ export const logout = async (req, res, next) => {
 
   let query;
 
-  if (type == 'one') {
+  if (type === 'one') {
     query = User.updateOne({ _id: userID }, { $pull: { valid_token: authToken } });
-  } else {
+  } else if (type === 'all') {
     query = User.updateOne({ _id: userID }, { $set: { valid_token: [] } });
   }
 
@@ -264,8 +219,6 @@ export const logout = async (req, res, next) => {
 
   } catch (err) {
     console.log(err);
-    let error = new Error("some errors");
-    error.status = 0;
-    return next(error);
+    return next(new Error("database error"));
   }
 };

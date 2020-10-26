@@ -1,27 +1,16 @@
-import validator from "express-validator";
-
 import ShopProfile from "../models/shop-profile.js";
-import { uploadImage, deleteImage } from "../aws/s3.js";
+import ShopCatalouge from '../models/shop-catalouge.js';
 import User from "../models/user.js";
+import { uploadImage, deleteImage } from "../aws/s3.js";
 
 const shopProfileBucket = "kagyii-store-shop-profile";
 
 export const create = async (req, res, next) => {
-  const validationErr = validator.validationResult(req);
-
-  if (!validationErr.isEmpty()) {
-    let err = new Error(validationErr.errors[0].msg);
-    err.status = 0;
-    console.log(err);
-    return next(err);
-  }
 
   const shopID = req.shop_id;
 
   if (shopID) {
-    let error = new Error("shop already exist");
-    error.status = 0;
-    return next(error);
+    return next(new Error("shop already exist"));
   }
 
   const userID = req.decoded_token.userID;
@@ -36,15 +25,13 @@ export const create = async (req, res, next) => {
   const coverImg = req.body.cover_image;
 
   try {
-    let s3CoverImg = { key: null, location: null };
 
-    if (coverImg) {
-      s3CoverImg = await uploadImage(
-        coverImg,
-        shopProfileBucket,
-        "cover-images/"
-      );
-    }
+    const s3CoverImg = await uploadImage(
+      coverImg,
+      shopProfileBucket,
+      "cover-images/"
+    );
+
     const s3ProfileImg = await uploadImage(
       profileImg,
       shopProfileBucket,
@@ -65,38 +52,28 @@ export const create = async (req, res, next) => {
       cover_img_location: s3CoverImg.location,
     });
 
-    const shopProfileDetails = await shopProfile.save();
+    const newShopProfile = await shopProfile.save();
     await User.updateOne(
       { _id: userID },
-      { shop_id: shopProfileDetails._id }
+      { shop_id: newShopProfile._id }
     ).exec();
 
     return res.json({
       status: 1,
       message: "success",
-      data: shopProfileDetails,
+      data: newShopProfile,
     });
   } catch (err) {
     console.log(err);
-    let error = new Error("some error");
-    error.status = 0;
-    return next(error);
+    return next(new Error("databse error"));
   }
 };
 
 export const getById = async (req, res, next) => {
-  const validationErr = validator.validationResult(req);
-
-  if (!validationErr.isEmpty()) {
-    let err = new Error(validationErr.errors[0].msg);
-    err.status = 0;
-    return next(err);
-  }
 
   const shopID = req.params.shop_id;
 
   try {
-
     const shopProfile = await ShopProfile.findOne({ _id: shopID })
       .populate({ path: 'pre_defined_type', select: 'name' })
       .populate({ path: 'city', select: 'name' })
@@ -114,30 +91,19 @@ export const getById = async (req, res, next) => {
 
   } catch (err) {
     console.log(err);
-    let error = new Error("some errors");
-    error.status = 0;
-    return next(error);
+    return next(new Error("databse error"));
   }
 };
 
 export const edit = async (req, res, next) => {
-  const validationErr = validator.validationResult(req);
-
-  if (!validationErr.isEmpty()) {
-    let err = new Error(validationErr.errors[0].msg);
-    err.status = 0;
-    return next(err);
-  }
 
   const shopID = req.params.shop_id;
 
-  if (req.params.shop_id != req.shop_id) {
-    let error = new Error("permission error");
-    error.status = 0;
-    return next(error);
+  if (shopID !== req.shop_id) {
+    return next(new Error("permission error"));
   }
 
-  const shopProfileUpdate = {};
+  const updateShopProfile = {};
 
   const name = req.body.name;
   const preDefinedType = req.body.pre_defined_type;
@@ -149,27 +115,27 @@ export const edit = async (req, res, next) => {
   const coverImg = req.body.cover_image;
 
   if (name) {
-    shopProfileUpdate.name = name;
+    updateShopProfile.name = name;
   }
 
   if (preDefinedType) {
-    shopProfileUpdate.pre_defined_type = preDefinedType;
+    updateShopProfile.pre_defined_type = preDefinedType;
   }
 
   if (userDefinedType) {
-    shopProfileUpdate.user_defined_type = userDefinedType;
+    updateShopProfile.user_defined_type = userDefinedType;
   }
 
   if (about) {
-    shopProfileUpdate.about = about;
+    updateShopProfile.about = about;
   }
 
   if (phone) {
-    shopProfileUpdate.phone = phone;
+    updateShopProfile.phone = phone;
   }
 
   if (address) {
-    shopProfileUpdate.address = address;
+    updateShopProfile.address = address;
   }
 
   try {
@@ -182,8 +148,8 @@ export const edit = async (req, res, next) => {
         shopProfileBucket,
         "cover-images/"
       );
-      shopProfileUpdate.cover_img_key = s3CoverImg.key;
-      shopProfileUpdate.cover_img_location = s3CoverImg.location;
+      updateShopProfile.cover_img_key = s3CoverImg.key;
+      updateShopProfile.cover_img_location = s3CoverImg.location;
     }
 
     if (profileImg) {
@@ -192,85 +158,39 @@ export const edit = async (req, res, next) => {
         shopProfileBucket,
         "profile-images/"
       );
-      shopProfileUpdate.profile_img_key = s3ProfileImg.key;
-      shopProfileUpdate.profile_img_location = s3ProfileImg.location;
+      updateShopProfile.profile_img_key = s3ProfileImg.key;
+      updateShopProfile.profile_img_location = s3ProfileImg.location;
     }
 
-    if (Object.keys(shopProfileUpdate).length != 0) {
-      const shopProfile = await ShopProfile.findByIdAndUpdate(
+    if (Object.keys(updateShopProfile).length != 0) {
+      const oldShopProfile = await ShopProfile.findByIdAndUpdate(
         shopID,
-        shopProfileUpdate
+        updateShopProfile
       ).exec();
 
-      if (shopProfileUpdate.cover_img_key) {
-        deleteImage(shopProfile.cover_img_key, shopProfileBucket);
+      if (updateShopProfile.cover_img_key) {
+        deleteImage(oldShopProfile.cover_img_key, shopProfileBucket);
       }
 
-      if (shopProfileUpdate.profile_img_key) {
-        deleteImage(shopProfile.profile_img_key, shopProfileBucket);
+      if (updateShopProfile.profile_img_key) {
+        deleteImage(oldShopProfile.profile_img_key, shopProfileBucket);
       }
 
       return res.json({
         status: 1,
-        message: "Success",
+        message: 'Success',
+        data: updateShopProfile
       });
     } else {
-      let error = new Error("no edit data");
-      error.status = 0;
-      return next(error);
+      return next(new Error("need edit data"));
     }
   } catch (err) {
     console.log(err);
-    let error = new Error("some errors");
-    error.status = 0;
-    return next(error);
-  }
-};
-
-export const createCatalouge = async (req, res, next) => {
-  const validationErr = validator.validationResult(req);
-
-  if (!validationErr.isEmpty()) {
-    let err = new Error(validationErr.errors[0].msg);
-    err.status = 0;
-    return next(err);
-  }
-
-  const shopID = req.params.shop_id;
-  const name = req.body.name;
-
-  if (req.params.shop_id != req.shop_id) {
-    let error = new Error("permission error");
-    error.status = 0;
-    return next(error);
-  }
-
-  try {
-    await ShopProfile.updateOne(
-      { _id: shopID },
-      { $push: { catalouge: { name: name } } }
-    ).exec();
-
-    return res.json({
-      status: 1,
-      message: "success",
-    });
-  } catch (err) {
-    console.log(err);
-    let error = new Error("some errors");
-    error.status = 0;
-    return next(error);
+    return next(new Error("databse error"));
   }
 };
 
 export const get = async (req, res, next) => {
-  // const validationErr = validator.validationResult(req);
-
-  // if (!validationErr.isEmpty()) {
-  //   let err = new Error(validationErr.errors[0].msg);
-  //   err.status = 0;
-  //   return next(err);
-  // }
 
   const pageSize = 20;
   const filter = req.query.filter;
@@ -280,13 +200,13 @@ export const get = async (req, res, next) => {
 
     let query;
 
-    if (filter.created_at) {
+    if (filter.latest) {
       if (filter.type) {
-        query = ShopProfile.find({ pre_defined_type: filter.type, _id: { $lt: filter.created_at } });
+        query = ShopProfile.find({ pre_defined_type: filter.type, createAt: { $lt: filter.latest } });
       } else if (filter.promo) {
-        query = ShopProfile.find({ _id: { $lt: filter.created_at }, promo_expiry: { $gt: filter.promo } });
+        query = ShopProfile.find({ createAt: { $lt: filter.latest }, promo_expiry: { $gt: filter.promo } });
       } else if (filter.city) {
-        query = ShopProfile.find({ city: filter.city, _id: { $lt: filter.created_at } });
+        query = ShopProfile.find({ city: filter.city, createAt: { $lt: filter.latest } });
       }
     } else {
       if (filter.type) {
@@ -305,7 +225,10 @@ export const get = async (req, res, next) => {
       }
     }
 
-    const shopProfiles = await query.limit(pageSize).exec();
+    const shopProfiles = await query.limit(pageSize)
+      .populate({ path: 'pre_defined_type', select: 'name' })
+      .populate({ path: 'city', select: 'name' })
+      .exec();
 
     return res.json({
       status: 1,
@@ -315,9 +238,93 @@ export const get = async (req, res, next) => {
 
   } catch (err) {
     console.log(err);
-    let error = new Error("some errors");
-    error.status = 0;
-    return next(error);
+    return next(new Error("databse error"));
   }
 
 };
+
+
+export const addCatalouge = async (req, res, next) => {
+
+  const name = req.body.name;
+  const shopID = req.params.shop_id;
+
+  if (shopID !== req.shop_id) {
+    return next(new Error('permission error'));
+  }
+
+  const shopCatalouge = new ShopCatalouge({
+    name: name
+  });
+
+  try {
+    const newShopCatalouge = await shopCatalouge.save();
+    await ShopProfile.updateOne({ _id: shopID }, { $push: { catalouge: newShopCatalouge._id } }).exec();
+
+    return res.json({
+      status: 1,
+      message: 'success'
+    });
+
+  } catch (err) {
+    console.log(err);
+    return next(new Error("databse error"));
+  }
+};
+
+export const removeCatalouge = async (req, res, next) => {
+
+  const catalougeId = req.params.catalouge_id;
+  const shopID = req.params.shop_id;
+
+  if (shopID !== req.shop_id) {
+    return next(new Error('permission error'));
+  }
+
+  try {
+
+    await Promise.all([
+      ShopProfile.updateOne({ _id: shopID, catalouge: catalougeId }, { $pull: { catalouge: catalougeId } }).exec(),
+      ShopCatalouge.deleteOne({ _id: catalougeId }).exec()
+    ]);
+
+    return res.json({
+      status: 1,
+      message: 'success'
+    });
+
+  } catch (err) {
+    console.log(err);
+    return next(new Error("databse error"));
+  }
+};
+
+
+export const editCatalouge = async (req, res, next) => {
+  const catalougeId = req.params.catalouge_id;
+  const shopID = req.params.shop_id;
+  const name = req.body.name;
+
+  if (shopID !== req.shop_id) {
+    return next(new Error('permission error'));
+  }
+
+
+  try {
+    const shopProfile = await ShopProfile.findOne({ _id: shopID, catalouge: catalougeId }).exec();
+    if (shopProfile) {
+      await ShopCatalouge.updateOne({ _id: catalougeId }, { name: name }).exec();
+
+      return res.json({
+        status: 1,
+        message: 'success'
+      });
+    }
+
+  } catch (err) {
+    console.log(err);
+    return next(new Error("databse error"));
+  }
+};
+
+
