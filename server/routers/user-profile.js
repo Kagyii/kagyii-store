@@ -1,5 +1,6 @@
 import express from 'express';
 import validator from 'express-validator';
+import isMongoId from 'validator/lib/isMongoId';
 
 import validateToken from '../middlewares/validate-token.js';
 import checkValidationError from '../middlewares/check-validation-error.js';
@@ -22,7 +23,18 @@ router.patch('/:profile_id', [
     validator.body('name').optional().isString().withMessage('Invalid name'),
     validator.body('address').optional().isArray({ min: 1, max: 2 }).withMessage('Invalid address'),
     validator.body('phone').optional().isArray({ min: 1, max: 2 }).withMessage('Invalid phone'),
-    validator.body('favourite_shop').optional().isMongoId().withMessage('Invalid shop id')
+    validator.body('favourite_shops').optional().isArray({ min: 1 }).withMessage('Required shop id').custom(value => {
+        if (!value.every(i => { return isMongoId(i); })) {
+            throw false;
+        }
+        return true;
+    }).withMessage('Invalid shop id'),
+    validator.body('favourite_types').optional().isArray({ min: 1 }).withMessage('Required type id').custom(value => {
+        if (!value.every(i => { return isMongoId(i); })) {
+            throw false;
+        }
+        return true;
+    }).withMessage('Invalid type Id')
 ], checkValidationError, validateToken, edit);
 
 

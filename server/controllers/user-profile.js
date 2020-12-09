@@ -67,7 +67,8 @@ export const edit = async (req, res, next) => {
     const name = req.body.name;
     const phone = req.body.phone;
     const address = req.body.address;
-    const favShop = req.body.favourite_shop;
+    const favShops = req.body.favourite_shops;
+    const favTypes = req.body.favourite_types;
     const userProfileUpdate = {};
 
     if (req.params.profile_id != req.profile_id) {
@@ -86,8 +87,12 @@ export const edit = async (req, res, next) => {
         userProfileUpdate.phone = phone;
     }
 
-    if (favShop) {
-        userProfileUpdate.$push = { fav_shops: favShop };
+    if (favShops) {
+        userProfileUpdate.fav_shops = favShops;
+    }
+
+    if (favTypes) {
+        userProfileUpdate.fav_types = favTypes;
     }
 
 
