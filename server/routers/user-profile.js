@@ -1,6 +1,6 @@
 import express from 'express';
 import validator from 'express-validator';
-import isMongoId from 'validator/lib/isMongoId';
+import isMongoId from 'validator/lib/isMongoId.js';
 
 import validateToken from '../middlewares/validate-token.js';
 import checkValidationError from '../middlewares/check-validation-error.js';

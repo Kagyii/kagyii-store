@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 
 const shopCatalougeSchema = new mongoose.Schema({
-    name: { type: String, required: true }
+    name: { type: String, required: true },
+    shop_id: { type: mongoose.Schema.Types.ObjectId, required: true }
 }, { timestamp: true });
 
 const ShopCatalouge = mongoose.model('shop_catalouge', shopCatalougeSchema);

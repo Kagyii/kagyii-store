@@ -20,8 +20,7 @@ const shopSchema = new Schema({
     cover_img_key: { type: String },
     promo_expiry: { type: Date },
     promo_percentage: { type: Number, default: 0 },
-    popularity: { type: Long, default: 0 },
-    catalouge: [{ type: Schema.Types.ObjectId, ref: 'shop_catalouge' }]
+    popularity: { type: Long, default: 0 }
 }, { timestamps: true });
 
 const ShopProfile = mongoose.model('shop', shopSchema);

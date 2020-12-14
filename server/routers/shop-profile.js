@@ -3,7 +3,7 @@ import validator from 'express-validator';
 
 import validateToken from '../middlewares/validate-token.js';
 import checkValidationError from '../middlewares/check-validation-error.js';
-import { create, getById, edit, get } from '../controllers/shop-profile.js';
+import { create, getById, edit, get, addCatalouge } from '../controllers/shop-profile.js';
 
 const router = express.Router();
 
@@ -42,10 +42,10 @@ router.patch('/:shop_id', [
     validator.body('cover_image').optional().isBase64().withMessage('Invalid cover image')
 ], checkValidationError, validateToken, edit);
 
-// router.post('/:shop_id/catalouge', [
-//     validator.param('shop_id').isMongoId().withMessage('Invalid shop id'),
-//     validator.body('name').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required name').isString().withMessage('Invalid name')
-// ], checkValidationError, validateToken, createCatalouge);
+router.post('/:shop_id/catalouge', [
+    validator.param('shop_id').isMongoId().withMessage('Invalid shop id'),
+    validator.body('name').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required name').isString().withMessage('Invalid name')
+], checkValidationError, validateToken, addCatalouge);
 
 // router.patch('/:shop_id/catalouge', [
 //     validator.param('shop_id').isMongoId().withMessage('Invalid shop id'),

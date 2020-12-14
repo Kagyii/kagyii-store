@@ -25,12 +25,15 @@ export const create = async (req, res, next) => {
   const coverImg = req.body.cover_image;
 
   try {
+    let s3CoverImg = { key: null, location: null };
+    if (coverImg) {
+      s3CoverImg = await uploadImage(
+        coverImg,
+        shopProfileBucket,
+        "cover-images/"
+      );
+    }
 
-    const s3CoverImg = await uploadImage(
-      coverImg,
-      shopProfileBucket,
-      "cover-images/"
-    );
 
     const s3ProfileImg = await uploadImage(
       profileImg,
@@ -74,10 +77,13 @@ export const getById = async (req, res, next) => {
   const shopID = req.params.shop_id;
 
   try {
-    const shopProfile = await ShopProfile.findOne({ _id: shopID })
+    const shopProfileDoc = ShopProfile.findOne({ _id: shopID })
       .populate({ path: 'pre_defined_type', select: 'name' })
-      .populate({ path: 'city', select: 'name' })
-      .exec();
+      .populate({ path: 'city', select: 'name' });
+
+    const shopCatalougeDoc = ShopCatalouge.find({ shop_id: shopID });
+
+    const [shopProfile, shopCatalouge] = await Promise.all([shopProfileDoc.exec(), shopCatalougeDoc.exec()]);
 
     if (shopProfile) {
       await shopProfile.updateOne({ $inc: { popularity: 1 } }).exec();
@@ -86,7 +92,8 @@ export const getById = async (req, res, next) => {
     return res.json({
       status: 1,
       message: "Success",
-      data: shopProfile
+      shop_profile: shopProfile,
+      shop_catalouge: shopCatalouge
     });
 
   } catch (err) {
@@ -99,7 +106,7 @@ export const edit = async (req, res, next) => {
 
   const shopID = req.params.shop_id;
 
-  if (shopID !== req.shop_id) {
+  if (shopID != req.shop_id) {
     return next(new Error("permission error"));
   }
 
@@ -249,17 +256,17 @@ export const addCatalouge = async (req, res, next) => {
   const name = req.body.name;
   const shopID = req.params.shop_id;
 
-  if (shopID !== req.shop_id) {
+  if (shopID != req.shop_id) {
     return next(new Error('permission error'));
   }
 
   const shopCatalouge = new ShopCatalouge({
-    name: name
+    name: name,
+    shop_id: shopID
   });
 
   try {
-    const newShopCatalouge = await shopCatalouge.save();
-    await ShopProfile.updateOne({ _id: shopID }, { $push: { catalouge: newShopCatalouge._id } }).exec();
+    await shopCatalouge.save();
 
     return res.json({
       status: 1,
@@ -277,16 +284,12 @@ export const removeCatalouge = async (req, res, next) => {
   const catalougeId = req.params.catalouge_id;
   const shopID = req.params.shop_id;
 
-  if (shopID !== req.shop_id) {
+  if (shopID != req.shop_id) {
     return next(new Error('permission error'));
   }
 
   try {
-
-    await Promise.all([
-      ShopProfile.updateOne({ _id: shopID, catalouge: catalougeId }, { $pull: { catalouge: catalougeId } }).exec(),
-      ShopCatalouge.deleteOne({ _id: catalougeId }).exec()
-    ]);
+    await ShopCatalouge.deleteOne({ _id: catalougeId, shop_id: shopID }).exec();
 
     return res.json({
       status: 1,
@@ -305,21 +308,17 @@ export const editCatalouge = async (req, res, next) => {
   const shopID = req.params.shop_id;
   const name = req.body.name;
 
-  if (shopID !== req.shop_id) {
+  if (shopID != req.shop_id) {
     return next(new Error('permission error'));
   }
 
-
   try {
-    const shopProfile = await ShopProfile.findOne({ _id: shopID, catalouge: catalougeId }).exec();
-    if (shopProfile) {
-      await ShopCatalouge.updateOne({ _id: catalougeId }, { name: name }).exec();
+    await ShopCatalouge.updateOne({ _id: catalougeId, shop_id: shopID }, { name: name }).exec();
 
-      return res.json({
-        status: 1,
-        message: 'success'
-      });
-    }
+    return res.json({
+      status: 1,
+      message: 'success'
+    });
 
   } catch (err) {
     console.log(err);

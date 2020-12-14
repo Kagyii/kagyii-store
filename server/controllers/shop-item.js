@@ -1,5 +1,6 @@
 import ShopItem from '../models/shop-item.js';
 import ShopProfile from '../models/shop-profile.js';
+import ShopCatalouge from '../models/shop-catalouge.js';
 import { uploadImage } from '../aws/s3.js';
 
 const shopItemBucket = 'kagyii-store-shop-item';
@@ -32,17 +33,7 @@ export const add = async (req, res, next) => {
 
 
     try {
-
-        if (category) {
-            const shopProfile = await ShopProfile.findOne({ 'catalouge._id': category }).exec();
-            if (!shopProfile) {
-                let error = new Error('catalouge does not exist');
-                error.status = 0;
-                return next(error);
-            }
-        }
         const s3ItemImg = await uploadImage(images, shopItemBucket, `${shopID}/`);
-
 
         if (promo !== {}) {
             await ShopProfile.updateOne({ _id: shopID },
