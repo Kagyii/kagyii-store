@@ -24,7 +24,9 @@ router.get('', [
     validator.query('filter.city').optional().isMongoId().withMessage('Invalid city'),
     validator.query('filter.latest').optional().isISO8601().withMessage('Invalid date'),
     validator.query('filter.promo').optional().isISO8601().withMessage('Invalid promo'),
-    validator.query('filter.favourite').optional().isArray({ min: 1 }).withMessage('Invalid favourite')
+    validator.query('filter.favourite_types').optional().isArray({ min: 1 }).withMessage('Invalid favourite types'),
+    validator.query('filter.favourite_shops').optional().isArray({ min: 1 }).withMessage('Invalid favourite shops'),
+
 ], checkValidationError, get);
 
 router.get('/:shop_id', [

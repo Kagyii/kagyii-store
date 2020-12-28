@@ -52,11 +52,17 @@ export const create = async (req, res, next) => {
       cover_img_location: s3CoverImg.location,
     });
 
-    const newShopProfile = await shopProfile.save();
+    await shopProfile.save();
+
+    const newShopProfile = await ShopProfile.findOne({ _id: shopID })
+      .populate({ path: 'pre_defined_type', select: 'name' })
+      .populate({ path: 'city', select: 'name' }).exec();
+
     await User.updateOne(
       { _id: userID },
       { shop_id: newShopProfile._id }
     ).exec();
+
 
     return res.json({
       status: 1,
@@ -92,6 +98,8 @@ export const getById = async (req, res, next) => {
       shop_profile: shopProfile,
       shop_catalouge: shopCatalouge
     });
+
+
 
   } catch (err) {
     console.log(err);
@@ -211,9 +219,14 @@ export const get = async (req, res, next) => {
         query = ShopProfile.find({ createAt: { $lt: filter.latest }, promo_expiry: { $gt: filter.promo } });
       } else if (filter.city) {
         query = ShopProfile.find({ city: filter.city, createAt: { $lt: filter.latest } });
-      } else if (filter.favourite.length) {
+      } else if (filter.favourite_types.length) {
         query = ShopProfile.find({
-          pre_defined_type: { $in: filter.favourite },
+          pre_defined_type: { $in: filter.favourite_types },
+          createAt: { $lt: filter.latest }
+        });
+      } else if (filter.favourite_shops.length) {
+        query = ShopProfile.find({
+          _id: { $in: filter.favourite_shops },
           createAt: { $lt: filter.latest }
         });
       }
@@ -225,8 +238,12 @@ export const get = async (req, res, next) => {
         query = ShopProfile.find({ promo_expiry: { $gt: filter.promo } });
       } else if (filter.city) {
         query = ShopProfile.find({ city: filter.city });
-      } else if (filter.favourite.length) {
-        query = ShopProfile.find({ pre_defined_type: { $in: filter.favourite } });
+      } else if (filter.favourite_types.length) {
+        query = ShopProfile.find({ pre_defined_type: { $in: filter.favourite_types } });
+      } else if (filter.favourite_shops.length) {
+        query = ShopProfile.find({
+          _id: { $in: filter.favourite_shops }
+        });
       }
     }
 

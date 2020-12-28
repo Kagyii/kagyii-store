@@ -42,7 +42,7 @@ export const get = async (req, res, next) => {
     const profileID = req.params.profile_id;
 
     try {
-        const userProfile = await UserProfile.findById(profileID).populate({ path: 'fav_shops' }).exec();
+        const userProfile = await UserProfile.findById(profileID).exec();
         if (userProfile) {
             return res.json({
                 status: 1,
