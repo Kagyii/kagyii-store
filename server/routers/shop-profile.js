@@ -16,14 +16,15 @@ router.post('', [
     validator.body('city').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required city').isString().withMessage('Invalid city'),
     validator.body('address').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required address').isString().withMessage('Invalid address'),
     validator.body('profile_image').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required profile image').isBase64().withMessage('Invalid profile image'),
-    validator.body('cover_image').optional().isBase64().withMessage('Invalid cover image')
+    validator.body('cover_image').isBase64().withMessage('Invalid cover image')
 ], checkValidationError, validateToken, create);
 
 router.get('', [
     validator.query('filter.type').optional().isMongoId().withMessage('Invalid type'),
     validator.query('filter.city').optional().isMongoId().withMessage('Invalid city'),
     validator.query('filter.latest').optional().isISO8601().withMessage('Invalid date'),
-    validator.query('filter.promo').optional().isISO8601().withMessage('Invalid promo')
+    validator.query('filter.promo').optional().isISO8601().withMessage('Invalid promo'),
+    validator.query('filter.favourite').optional().isArray({ min: 1 }).withMessage('Invalid favourite')
 ], checkValidationError, get);
 
 router.get('/:shop_id', [

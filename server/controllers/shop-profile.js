@@ -25,15 +25,12 @@ export const create = async (req, res, next) => {
   const coverImg = req.body.cover_image;
 
   try {
-    let s3CoverImg = { key: null, location: null };
-    if (coverImg) {
-      s3CoverImg = await uploadImage(
-        coverImg,
-        shopProfileBucket,
-        "cover-images/"
-      );
-    }
 
+    const s3CoverImg = await uploadImage(
+      coverImg,
+      shopProfileBucket,
+      "cover-images/"
+    );
 
     const s3ProfileImg = await uploadImage(
       profileImg,
@@ -214,7 +211,13 @@ export const get = async (req, res, next) => {
         query = ShopProfile.find({ createAt: { $lt: filter.latest }, promo_expiry: { $gt: filter.promo } });
       } else if (filter.city) {
         query = ShopProfile.find({ city: filter.city, createAt: { $lt: filter.latest } });
+      } else if (filter.favourite.length) {
+        query = ShopProfile.find({
+          pre_defined_type: { $in: filter.favourite },
+          createAt: { $lt: filter.latest }
+        });
       }
+
     } else {
       if (filter.type) {
         query = ShopProfile.find({ pre_defined_type: filter.type });
@@ -222,6 +225,8 @@ export const get = async (req, res, next) => {
         query = ShopProfile.find({ promo_expiry: { $gt: filter.promo } });
       } else if (filter.city) {
         query = ShopProfile.find({ city: filter.city });
+      } else if (filter.favourite.length) {
+        query = ShopProfile.find({ pre_defined_type: { $in: filter.favourite } });
       }
     }
 

@@ -1,6 +1,5 @@
 import ShopItem from '../models/shop-item.js';
 import ShopProfile from '../models/shop-profile.js';
-import ShopCatalouge from '../models/shop-catalouge.js';
 import { uploadImage } from '../aws/s3.js';
 
 const shopItemBucket = 'kagyii-store-shop-item';
