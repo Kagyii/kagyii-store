@@ -204,57 +204,42 @@ export const edit = async (req, res, next) => {
 
 export const get = async (req, res, next) => {
 
-  const pageSize = 20;
+  const pageSize = 5;
   const filter = req.query.filter;
   const sort = req.query.sort;
 
   try {
 
-    let query;
+    let findWith;
+    let sortBy;
 
-    if (filter.latest) {
+    if (filter) {
       if (filter.type) {
-        query = ShopProfile.find({ pre_defined_type: filter.type, createAt: { $lt: filter.latest } });
+        findWith = { pre_defined_type: filter.type };
       } else if (filter.promo) {
-        query = ShopProfile.find({ createAt: { $lt: filter.latest }, promo_expiry: { $gt: filter.promo } });
+        findWith = { promo_expiry: { $gt: filter.promo } };
       } else if (filter.city) {
-        query = ShopProfile.find({ city: filter.city, createAt: { $lt: filter.latest } });
+        findWith = { city: filter.city };
       } else if (filter.favourite_types.length) {
-        query = ShopProfile.find({
-          pre_defined_type: { $in: filter.favourite_types },
-          createAt: { $lt: filter.latest }
-        });
+        findWith = { pre_defined_type: { $in: filter.favourite_types } };
       } else if (filter.favourite_shops.length) {
-        query = ShopProfile.find({
-          _id: { $in: filter.favourite_shops },
-          createAt: { $lt: filter.latest }
-        });
+        findWith = { _id: { $in: filter.favourite_shops } };
       }
 
-    } else {
-      if (filter.type) {
-        query = ShopProfile.find({ pre_defined_type: filter.type });
-      } else if (filter.promo) {
-        query = ShopProfile.find({ promo_expiry: { $gt: filter.promo } });
-      } else if (filter.city) {
-        query = ShopProfile.find({ city: filter.city });
-      } else if (filter.favourite_types.length) {
-        query = ShopProfile.find({ pre_defined_type: { $in: filter.favourite_types } });
-      } else if (filter.favourite_shops.length) {
-        query = ShopProfile.find({
-          _id: { $in: filter.favourite_shops }
-        });
+      if (filter.latest) {
+        findWith.createAt = { $lt: filter.latest };
       }
     }
-
 
     if (sort) {
       if (sort.popular) {
-        query.sort({ popular: -1 });
+        sortBy = { popular: -1 };
       }
+    } else {
+      sortBy = { createAt: -1 };
     }
 
-    const shopProfiles = await query.limit(pageSize)
+    const shopProfiles = await ShopProfile.find(findWith).sort(sortBy).limit(pageSize)
       .populate({ path: 'pre_defined_type', select: 'name' })
       .populate({ path: 'city', select: 'name' })
       .exec();

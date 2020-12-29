@@ -33,8 +33,8 @@ router.post('/:shop_id/item', [
 
 router.get('/:shop_id/item', [
     validator.param('shop_id').isMongoId().withMessage('invalid shop id'),
-    validator.query('last_item').optional().isMongoId().withMessage('invalid item id'),
-    validator.query('category').optional().isMongoId().withMessage('invalid category')
+    validator.query('filter.latest').optional().isISO8601().withMessage('invalid time'),
+    validator.query('filter.category').optional().isMongoId().withMessage('invalid category')
 ], checkValidationError, get);
 
 export default router;

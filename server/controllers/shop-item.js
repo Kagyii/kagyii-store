@@ -69,35 +69,30 @@ export const add = async (req, res, next) => {
 export const get = async (req, res, next) => {
 
     const shopID = req.params.shop_id;
-    const lastItem = req.query.last_item;
-    const category = req.query.category;
-    const catalougeString = req.query.catalouge;
-    const pageSize = 20;
+    const filter = req.query.filter;
+    // const catalougeString = req.query.catalouge;
+    const pageSize = 5;
+    // let catalouge;
+    // if (catalougeString) {
+    //     catalouge = JSON.parse(catalougeString);
+    // }
+    let findWith;
 
-    let catalouge;
-    if (catalougeString) {
-        catalouge = JSON.parse(catalougeString);
-    }
-
-
-    let query;
-
-    if (category) {
-        if (lastItem) {
-            query = ShopItem.find({ category: category, shop_id: shopID, _id: { $gt: lastItem } });
+    if (filter) {
+        if (filter.category) {
+            findWith = { category: filter.category, shop_id: shopID };
         } else {
-            query = ShopItem.find({ category: category, shop_id: shopID });
+            findWith = { shop_id: shopID };
         }
-    } else {
-        if (lastItem) {
-            query = ShopItem.find({ shop_id: shopID, _id: { $gt: lastItem } });
-        } else {
-            query = ShopItem.find({ shop_id: shopID });
+
+        if (filter.latest) {
+            findWith.createAt = { $lt: filter.latest };
         }
     }
+
 
     try {
-        const shopItems = await query.sort({ createdAt: -1 }).limit(pageSize)
+        const shopItems = await ShopItem.find(findWith).sort({ createdAt: -1 }).limit(pageSize)
             .populate({ path: 'category', select: 'name' }).exec();
 
         return res.json({
