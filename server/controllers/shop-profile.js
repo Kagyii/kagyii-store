@@ -208,6 +208,14 @@ export const get = async (req, res, next) => {
   const filter = req.query.filter;
   const sort = req.query.sort;
 
+  if (typeof filter.favourite_types === 'string') {
+    filter.favourite_types = [filter.favourite_types];
+  }
+
+  if (typeof filter.favourite_shops === 'string') {
+    filter.favourite_shops = [filter.favourite_shops];
+  }
+
   try {
 
     let findWith;
