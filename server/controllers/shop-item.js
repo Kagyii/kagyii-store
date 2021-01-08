@@ -71,18 +71,16 @@ export const get = async (req, res, next) => {
     const shopID = req.params.shop_id;
     const filter = req.query.filter;
     // const catalougeString = req.query.catalouge;
-    const pageSize = 5;
+    const pageSize = 2;
     // let catalouge;
     // if (catalougeString) {
     //     catalouge = JSON.parse(catalougeString);
     // }
-    let findWith;
+    let findWith = {};
 
     if (filter) {
         if (filter.category) {
-            findWith = { category: filter.category, shop_id: shopID };
-        } else {
-            findWith = { shop_id: shopID };
+            findWith.category = filter.category;
         }
 
         if (filter.latest) {
@@ -90,10 +88,18 @@ export const get = async (req, res, next) => {
         }
     }
 
+    findWith.shop_id = shopID;
+
+    console.log(findWith);
 
     try {
         const shopItems = await ShopItem.find(findWith).sort({ createdAt: -1 }).limit(pageSize)
             .populate({ path: 'category', select: 'name' }).exec();
+
+
+        shopItems.forEach(item => {
+            console.log(item.createdAt);
+        });
 
         return res.json({
             status: 1,

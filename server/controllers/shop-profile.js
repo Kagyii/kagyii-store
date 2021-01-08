@@ -228,9 +228,9 @@ export const get = async (req, res, next) => {
         findWith = { promo_expiry: { $gt: filter.promo } };
       } else if (filter.city) {
         findWith = { city: filter.city };
-      } else if (filter.favourite_types.length) {
+      } else if (filter.favourite_types) {
         findWith = { pre_defined_type: { $in: filter.favourite_types } };
-      } else if (filter.favourite_shops.length) {
+      } else if (filter.favourite_shops) {
         findWith = { _id: { $in: filter.favourite_shops } };
       }
 
