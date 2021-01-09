@@ -7,13 +7,13 @@ const shopProfileBucket = "kagyii-store-shop-profile";
 
 export const create = async (req, res, next) => {
 
-  const shopID = req.shop_id;
+  const shopID = req.user_info.shop_id;
 
   if (shopID) {
     return next(new Error("shop already exist"));
   }
 
-  const userID = req.decoded_token.userID;
+  const userID = req.user_info.user_id;
   const name = req.body.name;
   const preDefinedType = req.body.pre_defined_type;
   const userDefinedType = req.body.user_defined_type;
@@ -23,6 +23,22 @@ export const create = async (req, res, next) => {
   const address = req.body.address;
   const profileImg = req.body.profile_image;
   const coverImg = req.body.cover_image;
+  const payment = req.body.payment;
+  const cashOnDelivery = req.body.cash_on_delivery;
+
+  const paymentMethod = {};
+
+  if (payment.length) {
+    paymentMethod.payment = payment;
+  } else {
+    if (cashOnDelivery !== undefined) {
+      paymentMethod.cash_on_delivery = cashOnDelivery;
+    } else {
+      return next(new Error('required payment method or cash on delivery'));
+    }
+  }
+
+
 
   try {
 
@@ -39,20 +55,23 @@ export const create = async (req, res, next) => {
     );
 
     const shopProfile = new ShopProfile({
-      name: name,
-      pre_defined_type: preDefinedType,
-      user_defined_type: userDefinedType,
-      about: about,
-      address: address,
-      city: city,
-      phone: phone,
-      profile_img_key: s3ProfileImg.key,
-      profile_img_location: s3ProfileImg.location,
-      cover_img_key: s3CoverImg.key,
-      cover_img_location: s3CoverImg.location,
+      ...{
+        name: name,
+        pre_defined_type: preDefinedType,
+        user_defined_type: userDefinedType,
+        about: about,
+        address: address,
+        city: city,
+        phone: phone,
+        profile_img_key: s3ProfileImg.key,
+        profile_img_location: s3ProfileImg.location,
+        cover_img_key: s3CoverImg.key,
+        cover_img_location: s3CoverImg.location
+      },
+      ...paymentMethod
     });
 
-    await shopProfile.save();
+    await shopProfile.save(shopProfileData);
 
     const newShopProfile = await ShopProfile.findOne({ _id: shopID })
       .populate({ path: 'pre_defined_type', select: 'name' })
@@ -111,7 +130,7 @@ export const edit = async (req, res, next) => {
 
   const shopID = req.params.shop_id;
 
-  if (shopID != req.shop_id) {
+  if (shopID != req.user_info.shop_id) {
     return next(new Error("permission error"));
   }
 
@@ -123,6 +142,8 @@ export const edit = async (req, res, next) => {
   const about = req.body.about;
   const phone = req.body.phone;
   const address = req.body.address;
+  const payment = req.body.payment;
+  const cashOnDelivery = req.body.cash_on_delivery;
   const profileImg = req.body.profile_image;
   const coverImg = req.body.cover_image;
 
@@ -148,6 +169,14 @@ export const edit = async (req, res, next) => {
 
   if (address) {
     updateShopProfile.address = address;
+  }
+
+  if (payment) {
+    updateShopProfile.payment = payment;
+  }
+
+  if (cashOnDelivery) {
+    updateShopProfile.cash_on_delivery = cashOnDelivery;
   }
 
   try {
@@ -271,7 +300,7 @@ export const addCatalouge = async (req, res, next) => {
   const name = req.body.name;
   const shopID = req.params.shop_id;
 
-  if (shopID != req.shop_id) {
+  if (shopID != req.user_info.shop_id) {
     return next(new Error('permission error'));
   }
 
@@ -299,7 +328,7 @@ export const removeCatalouge = async (req, res, next) => {
   const catalougeId = req.params.catalouge_id;
   const shopID = req.params.shop_id;
 
-  if (shopID != req.shop_id) {
+  if (shopID != req.user_info.shop_id) {
     return next(new Error('permission error'));
   }
 
@@ -323,7 +352,7 @@ export const editCatalouge = async (req, res, next) => {
   const shopID = req.params.shop_id;
   const name = req.body.name;
 
-  if (shopID != req.shop_id) {
+  if (shopID != req.user_info.shop_id) {
     return next(new Error('permission error'));
   }
 

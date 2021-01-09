@@ -196,7 +196,7 @@ export const loginWithEmail = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
 
-  const userID = req.decoded_token.userID;
+  const userID = req.user_info.user_id;
   const type = req.body.type;
   const authToken = req.headers.auth_token;
 

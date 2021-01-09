@@ -11,16 +11,18 @@ const validateToken = async (req, res, next) => {
 
     if (authToken) {
         try {
+            const userInfo = {};
             const decodedToken = jwt.verify(authToken, process.env.ACCESS_TOKEN_SECRET);
-            const userID = decodedToken.userID;
-            const user = await User.findById(userID);
+            userInfo.user_id = decodedToken.userID;
+            const user = await User.findById(userInfo.user_id);
+
             if (user) {
                 const isValidToken = user.valid_token.includes(authToken);
 
                 if (isValidToken) {
-                    req.profile_id = user.profile_id;
-                    req.shop_id = user.shop_id;
-                    req.decoded_token = decodedToken;
+                    userInfo.profile_id = user.profile_id;
+                    userInfo.shop_id = user.shop_id;
+                    req.user_info = userInfo;
                     return next();
                 } else {
                     return next(new Error('Token was no longer valid'));

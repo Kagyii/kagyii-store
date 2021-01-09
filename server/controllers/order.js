@@ -3,7 +3,7 @@ import Order from '../models/order.js';
 
 export const create = async (req, res, next) => {
 
-    const userId = req.decoded_token.userID;
+    const userId = req.user_info.user_id;
     const cart = req.body.cart;
     const shopId = req.body.shop_id;
     const cartTotalBill = req.body.total_bill;

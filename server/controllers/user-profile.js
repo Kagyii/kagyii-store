@@ -6,7 +6,7 @@ export const create = async (req, res, next) => {
     const name = req.body.name;
     const address = req.body.address;
     const phone = req.body.phone;
-    const userID = req.decoded_token.userID;
+    const userID = req.user_info.user_id;
 
     const userProfile = new UserProfile({
         name: name,
@@ -71,7 +71,7 @@ export const edit = async (req, res, next) => {
     const favTypes = req.body.favourite_types;
     const userProfileUpdate = {};
 
-    if (req.params.profile_id != req.profile_id) {
+    if (req.params.profile_id != req.user_info.profile_id) {
         return next(new Error('permission error'));
     }
 

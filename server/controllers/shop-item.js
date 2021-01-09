@@ -24,7 +24,7 @@ export const add = async (req, res, next) => {
         };
     }
 
-    if (shopID != req.shop_id) {
+    if (shopID != req.user_info.shop_id) {
         let error = new Error('permission error');
         error.status = 0;
         return next(error);
