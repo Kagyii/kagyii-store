@@ -5,9 +5,9 @@ import mongoose from 'mongoose';
 // });
 
 const chatSessionSchema = new mongoose.Schema({
-    shop_id: { type: mongoose.Types.ObjectId, required: true },
-    user_id: { type: mongoose.Types.ObjectId, required: true },
-    chat_id: { type: mongoose.Types.ObjectId }
+    shop_id: { type: mongoose.Types.ObjectId, required: true, ref: 'shop_profile' },
+    profile_id: { type: mongoose.Types.ObjectId, required: true, ref: 'user_profile' },
+    chat_id: { type: mongoose.Types.ObjectId, ref: 'chat' }
 }, { timestamps: true });
 
 export const ChatSession = mongoose.model('chat_session', chatSessionSchema);

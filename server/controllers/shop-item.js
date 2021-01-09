@@ -84,22 +84,15 @@ export const get = async (req, res, next) => {
         }
 
         if (filter.latest) {
-            findWith.createAt = { $lt: filter.latest };
+            findWith.createdAt = { $lt: filter.latest };
         }
     }
 
     findWith.shop_id = shopID;
 
-    console.log(findWith);
-
     try {
         const shopItems = await ShopItem.find(findWith).sort({ createdAt: -1 }).limit(pageSize)
             .populate({ path: 'category', select: 'name' }).exec();
-
-
-        shopItems.forEach(item => {
-            console.log(item.createdAt);
-        });
 
         return res.json({
             status: 1,

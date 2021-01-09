@@ -264,7 +264,7 @@ export const get = async (req, res, next) => {
       }
 
       if (filter.latest) {
-        findWith.createAt = { $lt: filter.latest };
+        findWith.createdAt = { $lt: filter.latest };
       }
     }
 
@@ -273,7 +273,7 @@ export const get = async (req, res, next) => {
         sortBy = { popular: -1 };
       }
     } else {
-      sortBy = { createAt: -1 };
+      sortBy = { createdAt: -1 };
     }
 
     const shopProfiles = await ShopProfile.find(findWith).sort(sortBy).limit(pageSize)

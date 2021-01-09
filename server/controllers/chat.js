@@ -5,12 +5,12 @@ import { uploadImage } from '../aws/s3.js';
 const chatBucket = "kagyii-store-chat";
 
 export const createSession = async (req, res, next) => {
-    const userId = req.body.user_id;
+    const profileId = req.body.profile_id;
     const shopId = req.body.shop_id;
 
     try {
         const chatSession = new ChatSession({
-            user_id: userId,
+            profile_id: profileId,
             shop_id: shopId
         });
         const chatSessionDoc = await chatSession.save();
@@ -19,7 +19,9 @@ export const createSession = async (req, res, next) => {
             status: 1,
             message: 'success',
             data: {
-                session_id: chatSessionDoc._id
+                session_id: chatSessionDoc._id,
+                profile_id: chatSessionDoc.profile_id,
+                shop_id: chatSessionDoc.shop_id
             }
         });
 
@@ -29,16 +31,59 @@ export const createSession = async (req, res, next) => {
 
 };
 
+export const getSessions = async (req, res, next) => {
+    const id = req.query.id;
+    const type = req.query.type;
+    const filter = req.query.filter;
+    const findWith = {};
+    const pageSize = 3;
+    const populateProfile = {};
+
+    if (type === 'user') {
+        if (id === req.user_info.profile_id) {
+            findWith.profile_id = id;
+            populateProfile.path = 'user_profile';
+        } else {
+            return next(new Error('authorization error'));
+        }
+    } else if (type === 'shop') {
+        if (id === req.user_info.shop_id) {
+            findWith.shop_id = id;
+            populateProfile.path = 'shop_profile';
+        } else {
+            return next(new Error('authorization error'));
+        }
+    }
+
+    if (filter.latest) {
+        findWith.createdAt = { $lt: filter.latest };
+    }
+
+    try {
+        const chatSessionDocs = await ChatSession.find(findWith).sort({ createdAt: -1 }).limit(pageSize)
+            .populate(populateProfile).populate({ path: 'chat', select: 'message' }).exec();
+
+        return res.json({
+            status: 1,
+            message: 'success',
+            data: chatSessionDocs
+        });
+
+    } catch (err) {
+        return next(new Error('db error'));
+    }
+};
+
 
 export const deleteSession = async (req, res, next) => {
 
 };
 
-export const sendMessage = async () => {
+export const sendMessage = async (req, res, next) => {
     const sessionId = req.params.session_id;
     const from = req.body.from;
     const to = req.body.to;
-    const userId = req.body.user_id;
+    const profileId = req.body.profile_id;
     const shopId = req.body.shop_id;
     const text = req.body.text;
     const image = req.body.image;
@@ -51,7 +96,7 @@ export const sendMessage = async () => {
         const chatData = { session_id: sessionId, from: from, to: to };
         const message = { text: text };
         if (image) {
-            const s3Image = await uploadImage(image, chatBucket, `${shopId}${userId}/`);
+            const s3Image = await uploadImage(image, chatBucket, `${shopId}${profileId}/`);
             message.img_key = s3Image.key;
             message.img_location = s3Image.location;
         }
@@ -61,7 +106,7 @@ export const sendMessage = async () => {
         const chat = new Chat(chatData);
         const chatDoc = await chat.save();
 
-        await ChatSession.updateOne({ _id: sessionId, user_id: userId, shop_id: shopId },
+        await ChatSession.updateOne({ _id: sessionId, profile_id: profileId, shop_id: shopId },
             { chat_id: chatDoc._id }).exec();
 
         return res.json({
@@ -73,4 +118,40 @@ export const sendMessage = async () => {
         return next(new Error('db error'));
     }
 
+};
+
+
+export const getMessage = async (req, res, next) => {
+    const sessionId = req.params.session_id;
+    const id = req.query.id;
+    const type = req.query.type;
+    const filter = req.query.filter;
+
+    if (type === 'user') {
+        if (id !== req.user_info.profile_id) {
+            return next(new Error('authorization error'));
+        }
+    } else if (type === 'shop') {
+        if (id !== req.user_info.shop_id) {
+            return next(new Error('authorization error'));
+        }
+    }
+
+
+    const findWith = { session_id: sessionId };
+    if (filter.latest) {
+        findWith.createdAt = filter.latest;
+    }
+
+    try {
+        const chatDocs = await Chat.find(findWith).sort({ createdAt: -1 }).exec();
+
+        return res.json({
+            status: 1,
+            message: 'success',
+            data: chatDocs
+        });
+    } catch (error) {
+        return next(new Error('db error'));
+    }
 };
