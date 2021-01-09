@@ -11,19 +11,19 @@ const router = express.Router();
 
 router.post('/:shop_id/item', [
     validator.param('shop_id').isMongoId().withMessage('invalid shop id'),
-    validator.body('name').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required name').isString().withMessage('Invalid name'),
-    validator.body('category').isArray({ min: 1, max: 5 }).withMessage('Required at least one').custom(value => {
+    validator.body('name').isString().trim().not().isEmpty({ ignore_whitespace: true }).withMessage('Invalid name'),
+    validator.body('category').isArray({ min: 1, max: 3 }).withMessage('Required at least one').custom(value => {
         if (!value.every(i => { return isMongoId(i); })) {
             throw false;
         }
         return true;
     }).withMessage('invalid category'),
-    validator.body('description').optional().isString().withMessage('invalid description'),
-    validator.body('price').exists({ checkNull: true }).not().isEmpty({ ignore_whitespace: true }).withMessage('Required price').isInt().withMessage('Invalid price'),
+    validator.body('description').optional().isString().trim().not().isEmpty({ ignore_whitespace: true }).withMessage('invalid description'),
+    validator.body('price').isInt().withMessage('Invalid price'),
     validator.body('promo_price').optional().isInt().withMessage('Invalid promo'),
     validator.body('promo_percentage').optional().isInt().withMessage('Invalid promo percentage'),
     validator.body('promo_expiry').optional().isISO8601().withMessage('Invalid expiry date'),
-    validator.body('images').optional().isArray({ min: 1, max: 5 }).withMessage('Required image').custom(value => {
+    validator.body('images').optional().isArray({ min: 1, max: 5 }).withMessage('Required at least one image').custom(value => {
         if (!value.every(i => { return isBase64(i); })) {
             throw false;
         }

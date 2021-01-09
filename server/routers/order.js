@@ -8,7 +8,7 @@ import { create } from '../controllers/order.js';
 
 const router = express.Router();
 
-router.post('',
+router.post('', [
     validator.body('shop_id').isMongoId().withMessage('Invalid shopId'),
     validator.body('cart').isArray({ min: 1, max: 100 }).withMessage('Required at least one in cart').custom(value => {
         if (!value.every(item => { return isMongoId(item.id); })) {
@@ -16,7 +16,7 @@ router.post('',
         }
         return true;
     }).withMessage('invalid cart'),
-    validator.body('total_bill').isNumeric().withMessage('invalid bill'),
-    validateToken, checkValidationError, create);
+    validator.body('total_bill').isInt().withMessage('invalid bill')
+], validateToken, checkValidationError, create);
 
 export default router;
