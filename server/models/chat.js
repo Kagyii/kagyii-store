@@ -1,24 +1,36 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 // const metaScheam = new mongoose.Schema({
 //     chat_id: { type: mongoose.Types.ObjectId, required: true }
 // });
 
-const chatSessionSchema = new mongoose.Schema({
-    shop_id: { type: mongoose.Types.ObjectId, required: true, ref: 'shop_profile' },
-    profile_id: { type: mongoose.Types.ObjectId, required: true, ref: 'user_profile' },
-    chat_id: { type: mongoose.Types.ObjectId, ref: 'chat' }
-}, { timestamps: true });
+const chatSessionSchema = new mongoose.Schema(
+  {
+    shop_id: {
+      type: mongoose.Types.ObjectId,
+      required: true,
+      ref: "shop_profile",
+    },
+    profile_id: {
+      type: mongoose.Types.ObjectId,
+      required: true,
+      ref: "user_profile",
+    },
+    chat_id: { type: mongoose.Types.ObjectId, ref: "chat" },
+  },
+  { timestamps: true }
+);
 
-export const ChatSession = mongoose.model('chat_session', chatSessionSchema);
+export const ChatSession = mongoose.model("chat_session", chatSessionSchema);
 
-
-const chatSchema = new mongoose.Schema({
+const chatSchema = new mongoose.Schema(
+  {
     session_id: { type: mongoose.Types.ObjectId, required: true },
     message: { type: Object, required: true },
     from: { type: mongoose.Types.ObjectId, required: true },
-    to: { type: mongoose.Types.ObjectId, required: true }
-}, { timestamps: true });
+    to: { type: mongoose.Types.ObjectId, required: true },
+  },
+  { timestamps: true }
+);
 
-export const Chat = mongoose.model('chat', chatSchema);
-
+export const Chat = mongoose.model("chat", chatSchema);

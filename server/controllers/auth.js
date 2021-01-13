@@ -10,7 +10,6 @@ import User from "../models/user.js";
 dotenv.config();
 
 export const signUpWithEmail = async (req, res, next) => {
-
   const email = req.body.email;
   const password = req.body.password;
 
@@ -22,10 +21,13 @@ export const signUpWithEmail = async (req, res, next) => {
       const hashPassword = await bcrypt.hash(password, bcrypt.genSaltSync());
       const auth = new User({
         email: email,
-        password: hashPassword
+        password: hashPassword,
       });
       const newUser = await auth.save();
-      const authToken = jwt.sign({ userID: newUser._id }, process.env.ACCESS_TOKEN_SECRET);
+      const authToken = jwt.sign(
+        { userID: newUser._id },
+        process.env.ACCESS_TOKEN_SECRET
+      );
       await User.updateOne(
         { _id: newUser._id },
         { $push: { valid_token: authToken } }
@@ -41,12 +43,11 @@ export const signUpWithEmail = async (req, res, next) => {
     }
   } catch (err) {
     console.log(err);
-    return next(new Error('database error'));
+    return next(new Error("database error"));
   }
 };
 
 export const signInOrLoginWithProviders = async (req, res, next) => {
-
   const accessToken = req.body.access_token;
   const providerName = req.body.provider_name;
 
@@ -75,7 +76,8 @@ export const signInOrLoginWithProviders = async (req, res, next) => {
       });
       providerUserID = response.data.data.user_id;
     } else if (providerName == "google") {
-      const CLIENT_ID = "421649987146-b6rfb6gargmskv4gp0in342ge0j98uit.apps.googleusercontent.com";
+      const CLIENT_ID =
+        "421649987146-b6rfb6gargmskv4gp0in342ge0j98uit.apps.googleusercontent.com";
       const client = new gAuth.OAuth2Client(CLIENT_ID);
 
       const ticket = await client.verifyIdToken({
@@ -144,16 +146,18 @@ export const signInOrLoginWithProviders = async (req, res, next) => {
     }
   } catch (err) {
     console.log(err);
-    if (err instanceof errors.JOSEError && err.code === "ERR_JWS_VERIFICATION_FAILED") {
+    if (
+      err instanceof errors.JOSEError &&
+      err.code === "ERR_JWS_VERIFICATION_FAILED"
+    ) {
       return next(new Error("not a apple user"));
     } else {
-      return next(new Error('database error'));
+      return next(new Error("database error"));
     }
   }
 };
 
 export const loginWithEmail = async (req, res, next) => {
-
   const email = req.body.email;
   const password = req.body.password;
 
@@ -178,7 +182,7 @@ export const loginWithEmail = async (req, res, next) => {
             auth_token: authToken,
             profile_setup: user.profile_setup,
             shop_id: user.shop_id,
-            profile_id: user.profile_id
+            profile_id: user.profile_id,
           },
         });
       } else {
@@ -193,30 +197,29 @@ export const loginWithEmail = async (req, res, next) => {
   }
 };
 
-
 export const logout = async (req, res, next) => {
-
   const userID = req.user_info.user_id;
   const type = req.body.type;
   const authToken = req.headers.auth_token;
 
   let query;
 
-  if (type === 'one') {
-    query = User.updateOne({ _id: userID }, { $pull: { valid_token: authToken } });
-  } else if (type === 'all') {
+  if (type === "one") {
+    query = User.updateOne(
+      { _id: userID },
+      { $pull: { valid_token: authToken } }
+    );
+  } else if (type === "all") {
     query = User.updateOne({ _id: userID }, { $set: { valid_token: [] } });
   }
 
   try {
-
     await query.exec();
 
     return res.json({
       status: 1,
-      message: "success"
+      message: "success",
     });
-
   } catch (err) {
     console.log(err);
     return next(new Error("database error"));

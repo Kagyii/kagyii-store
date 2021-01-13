@@ -1,12 +1,11 @@
 import ShopProfile from "../models/shop-profile.js";
-import ShopCatalouge from '../models/shop-catalouge.js';
+import ShopCatalouge from "../models/shop-catalouge.js";
 import User from "../models/user.js";
 import { uploadImage, deleteImage } from "../aws/s3.js";
 
 const shopProfileBucket = "kagyii-store-shop-profile";
 
 export const create = async (req, res, next) => {
-
   const shopID = req.user_info.shop_id;
 
   if (shopID) {
@@ -34,14 +33,11 @@ export const create = async (req, res, next) => {
     if (cashOnDelivery !== undefined) {
       paymentMethod.cash_on_delivery = cashOnDelivery;
     } else {
-      return next(new Error('required payment method or cash on delivery'));
+      return next(new Error("required payment method or cash on delivery"));
     }
   }
 
-
-
   try {
-
     const s3CoverImg = await uploadImage(
       coverImg,
       shopProfileBucket,
@@ -66,22 +62,22 @@ export const create = async (req, res, next) => {
         profile_img_key: s3ProfileImg.key,
         profile_img_location: s3ProfileImg.location,
         cover_img_key: s3CoverImg.key,
-        cover_img_location: s3CoverImg.location
+        cover_img_location: s3CoverImg.location,
       },
-      ...paymentMethod
+      ...paymentMethod,
     });
 
     await shopProfile.save(shopProfileData);
 
     const newShopProfile = await ShopProfile.findOne({ _id: shopID })
-      .populate({ path: 'pre_defined_type', select: 'name' })
-      .populate({ path: 'city', select: 'name' }).exec();
+      .populate({ path: "pre_defined_type", select: "name" })
+      .populate({ path: "city", select: "name" })
+      .exec();
 
     await User.updateOne(
       { _id: userID },
       { shop_id: newShopProfile._id }
     ).exec();
-
 
     return res.json({
       status: 1,
@@ -95,17 +91,19 @@ export const create = async (req, res, next) => {
 };
 
 export const getById = async (req, res, next) => {
-
   const shopID = req.params.shop_id;
 
   try {
     const shopProfileDoc = ShopProfile.findOne({ _id: shopID })
-      .populate({ path: 'pre_defined_type', select: 'name' })
-      .populate({ path: 'city', select: 'name' });
+      .populate({ path: "pre_defined_type", select: "name" })
+      .populate({ path: "city", select: "name" });
 
     const shopCatalougeDoc = ShopCatalouge.find({ shop_id: shopID });
 
-    const [shopProfile, shopCatalouge] = await Promise.all([shopProfileDoc.exec(), shopCatalougeDoc.exec()]);
+    const [shopProfile, shopCatalouge] = await Promise.all([
+      shopProfileDoc.exec(),
+      shopCatalougeDoc.exec(),
+    ]);
 
     if (shopProfile) {
       await shopProfile.updateOne({ $inc: { popularity: 1 } }).exec();
@@ -115,11 +113,8 @@ export const getById = async (req, res, next) => {
       status: 1,
       message: "Success",
       shop_profile: shopProfile,
-      shop_catalouge: shopCatalouge
+      shop_catalouge: shopCatalouge,
     });
-
-
-
   } catch (err) {
     console.log(err);
     return next(new Error("databse error"));
@@ -127,7 +122,6 @@ export const getById = async (req, res, next) => {
 };
 
 export const edit = async (req, res, next) => {
-
   const shopID = req.params.shop_id;
 
   if (shopID != req.user_info.shop_id) {
@@ -219,8 +213,8 @@ export const edit = async (req, res, next) => {
 
       return res.json({
         status: 1,
-        message: 'Success',
-        data: updateShopProfile
+        message: "Success",
+        data: updateShopProfile,
       });
     } else {
       return next(new Error("need edit data"));
@@ -232,21 +226,19 @@ export const edit = async (req, res, next) => {
 };
 
 export const get = async (req, res, next) => {
-
   const pageSize = 5;
   const filter = req.query.filter;
   const sort = req.query.sort;
 
-  if (typeof filter.favourite_types === 'string') {
+  if (typeof filter.favourite_types === "string") {
     filter.favourite_types = [filter.favourite_types];
   }
 
-  if (typeof filter.favourite_shops === 'string') {
+  if (typeof filter.favourite_shops === "string") {
     filter.favourite_shops = [filter.favourite_shops];
   }
 
   try {
-
     let findWith;
     let sortBy;
 
@@ -276,37 +268,35 @@ export const get = async (req, res, next) => {
       sortBy = { createdAt: -1 };
     }
 
-    const shopProfiles = await ShopProfile.find(findWith).sort(sortBy).limit(pageSize)
-      .populate({ path: 'pre_defined_type', select: 'name' })
-      .populate({ path: 'city', select: 'name' })
+    const shopProfiles = await ShopProfile.find(findWith)
+      .sort(sortBy)
+      .limit(pageSize)
+      .populate({ path: "pre_defined_type", select: "name" })
+      .populate({ path: "city", select: "name" })
       .exec();
 
     return res.json({
       status: 1,
       message: "success",
-      data: shopProfiles
+      data: shopProfiles,
     });
-
   } catch (err) {
     console.log(err);
     return next(new Error("databse error"));
   }
-
 };
 
-
 export const addCatalouge = async (req, res, next) => {
-
   const name = req.body.name;
   const shopID = req.params.shop_id;
 
   if (shopID != req.user_info.shop_id) {
-    return next(new Error('permission error'));
+    return next(new Error("permission error"));
   }
 
   const shopCatalouge = new ShopCatalouge({
     name: name,
-    shop_id: shopID
+    shop_id: shopID,
   });
 
   try {
@@ -314,9 +304,8 @@ export const addCatalouge = async (req, res, next) => {
 
     return res.json({
       status: 1,
-      message: 'success'
+      message: "success",
     });
-
   } catch (err) {
     console.log(err);
     return next(new Error("databse error"));
@@ -324,12 +313,11 @@ export const addCatalouge = async (req, res, next) => {
 };
 
 export const removeCatalouge = async (req, res, next) => {
-
   const catalougeId = req.params.catalouge_id;
   const shopID = req.params.shop_id;
 
   if (shopID != req.user_info.shop_id) {
-    return next(new Error('permission error'));
+    return next(new Error("permission error"));
   }
 
   try {
@@ -337,15 +325,13 @@ export const removeCatalouge = async (req, res, next) => {
 
     return res.json({
       status: 1,
-      message: 'success'
+      message: "success",
     });
-
   } catch (err) {
     console.log(err);
     return next(new Error("databse error"));
   }
 };
-
 
 export const editCatalouge = async (req, res, next) => {
   const catalougeId = req.params.catalouge_id;
@@ -353,21 +339,21 @@ export const editCatalouge = async (req, res, next) => {
   const name = req.body.name;
 
   if (shopID != req.user_info.shop_id) {
-    return next(new Error('permission error'));
+    return next(new Error("permission error"));
   }
 
   try {
-    await ShopCatalouge.updateOne({ _id: catalougeId, shop_id: shopID }, { name: name }).exec();
+    await ShopCatalouge.updateOne(
+      { _id: catalougeId, shop_id: shopID },
+      { name: name }
+    ).exec();
 
     return res.json({
       status: 1,
-      message: 'success'
+      message: "success",
     });
-
   } catch (err) {
     console.log(err);
     return next(new Error("databse error"));
   }
 };
-
-

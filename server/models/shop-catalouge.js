@@ -1,10 +1,13 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const shopCatalougeSchema = new mongoose.Schema({
+const shopCatalougeSchema = new mongoose.Schema(
+  {
     name: { type: String, required: true },
-    shop_id: { type: mongoose.Types.ObjectId, required: true }
-}, { timestamp: true });
+    shop_id: { type: mongoose.Types.ObjectId, required: true },
+  },
+  { timestamp: true }
+);
 
-const ShopCatalouge = mongoose.model('shop_catalouge', shopCatalougeSchema);
+const ShopCatalouge = mongoose.model("shop_catalouge", shopCatalougeSchema);
 
 export default ShopCatalouge;
