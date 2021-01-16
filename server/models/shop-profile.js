@@ -26,8 +26,9 @@ const shopSchema = new mongoose.Schema(
     promo_expiry: { type: Date },
     promo_percentage: { type: Number, default: 0 },
     popularity: { type: Long, default: 0 },
-    cush_on_delivery: { type: Boolean, default: false },
+    cash_on_delivery: { type: Boolean, default: false },
     payment: { type: [Object] },
+    delivery_info: { type: String },
   },
   { timestamps: true }
 );

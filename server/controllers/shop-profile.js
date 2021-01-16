@@ -24,6 +24,7 @@ export const create = async (req, res, next) => {
   const coverImg = req.body.cover_image;
   const payment = req.body.payment;
   const cashOnDelivery = req.body.cash_on_delivery;
+  const deliveryInfo = req.body.delivery_info;
 
   const paymentMethod = {};
 
@@ -63,6 +64,7 @@ export const create = async (req, res, next) => {
         profile_img_location: s3ProfileImg.location,
         cover_img_key: s3CoverImg.key,
         cover_img_location: s3CoverImg.location,
+        delivery_info: deliveryInfo,
       },
       ...paymentMethod,
     });
@@ -140,6 +142,7 @@ export const edit = async (req, res, next) => {
   const cashOnDelivery = req.body.cash_on_delivery;
   const profileImg = req.body.profile_image;
   const coverImg = req.body.cover_image;
+  const deliveryInfo = req.body.delivery_info;
 
   if (name) {
     updateShopProfile.name = name;
@@ -171,6 +174,10 @@ export const edit = async (req, res, next) => {
 
   if (cashOnDelivery) {
     updateShopProfile.cash_on_delivery = cashOnDelivery;
+  }
+
+  if (deliveryInfo) {
+    updateShopProfile.delivery_info = deliveryInfo;
   }
 
   try {

@@ -76,6 +76,11 @@ router.post(
       .optional()
       .isArray({ min: 1 })
       .withMessage("Invalid payment"),
+    validator
+      .body("delivery_info")
+      .optional()
+      .isString()
+      .withMessage("Invalid delivery info"),
   ],
   checkValidationError,
   validateToken,
