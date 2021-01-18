@@ -69,7 +69,7 @@ export const create = async (req, res, next) => {
       ...paymentMethod,
     });
 
-    await shopProfile.save(shopProfileData);
+    await shopProfile.save();
 
     const newShopProfile = await ShopProfile.findOne({ _id: shopID })
       .populate({ path: "pre_defined_type", select: "name" })
