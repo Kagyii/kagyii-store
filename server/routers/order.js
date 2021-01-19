@@ -4,7 +4,7 @@ import isMongoId from "validator/lib/isMongoId.js";
 
 import validateToken from "../middlewares/validate-token.js";
 import checkValidationError from "../middlewares/check-validation-error.js";
-import { create } from "../controllers/order.js";
+import { create, get } from "../controllers/order.js";
 
 const router = express.Router();
 
@@ -32,6 +32,29 @@ router.post(
   validateToken,
   checkValidationError,
   create
+);
+
+router.get(
+  "",
+  [
+    validator
+      .query("acc_type")
+      .isIn(["shop", "customer"])
+      .withMessage("Invalid account type"),
+    validator
+      .query("filter.order_state")
+      .optional()
+      .isBoolean()
+      .withMessage("Invalid order state"),
+    validator
+      .query("filter.latest")
+      .optional()
+      .isISO8601()
+      .withMessage("Invalid latest time"),
+  ],
+  validateToken,
+  checkValidationError,
+  get
 );
 
 export default router;

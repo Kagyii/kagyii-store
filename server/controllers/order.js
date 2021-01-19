@@ -73,6 +73,45 @@ export const create = async (req, res, next) => {
     });
   } catch (err) {
     console.log(err);
-    return next(new Error("database error"));
+    return next(new Error("internal error"));
+  }
+};
+
+export const get = async (req, res, next) => {
+  const accType = req.query.acc_type;
+  const filter = req.query.filter;
+  const pageSize = 5;
+
+  let findWith = {};
+
+  if (accType === "shop") {
+    findWith.shop_id = req.user_info.shop_id;
+  } else if (accType === "customer") {
+    findWith.customer_id = req.user_info.user_id;
+  }
+
+  if (filter) {
+    if (filter.order_state) {
+      findWith.accepted = filter.order_state;
+    }
+
+    if (filter.latest) {
+      findWith.createdAt = filter.latest;
+    }
+  }
+
+  try {
+    const orders = await Order.find(findWith)
+      .sort({ createdAt: -1 })
+      .limit(pageSize)
+      .exec();
+    return res.json({
+      status: 1,
+      message: "success",
+      data: orders,
+    });
+  } catch (err) {
+    console.log(err);
+    return next(new Error("internal error"));
   }
 };
