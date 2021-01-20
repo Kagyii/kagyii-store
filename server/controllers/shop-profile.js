@@ -51,7 +51,7 @@ export const create = async (req, res, next) => {
       "profile-images/"
     );
 
-    const shopProfile = new ShopProfile({
+    const shopProfile = await new ShopProfile({
       ...{
         name: name,
         pre_defined_type: preDefinedType,
@@ -67,11 +67,9 @@ export const create = async (req, res, next) => {
         delivery_info: deliveryInfo,
       },
       ...paymentMethod,
-    });
+    }).save();
 
-    await shopProfile.save();
-
-    const newShopProfile = await ShopProfile.findOne({ _id: shopID })
+    const newShopProfile = await ShopProfile.findOne({ _id: shopProfile._id })
       .populate({ path: "pre_defined_type", select: "name" })
       .populate({ path: "city", select: "name" })
       .exec();
