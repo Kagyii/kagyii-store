@@ -115,3 +115,49 @@ export const get = async (req, res, next) => {
     return next(new Error("internal error"));
   }
 };
+
+// export const remove = async (req, res, next) => {
+//   const orderId = req.params.order_id;
+//   const customerId = req.body.customer_id;
+
+//   try {
+//     const order = await Order.findOneAndDelete({
+//       _id: orderId,
+//       customer_id: customerId,
+//     }).exec();
+//     return res.json({
+//       status: 1,
+//       message: "success",
+//       data: order,
+//     });
+//   } catch (err) {
+//     console.log(err);
+//     return next(new Error("internal error"));
+//   }
+// };
+
+export const accept = async (req, res, next) => {
+  const orderId = req.params.order_id;
+  const shopId = req.body.shop_id;
+  const accepted = req.body.accepted;
+
+  if (shopId !== req.user_info.shop_id) {
+    return next(new Error("not authorized shop"));
+  }
+
+  try {
+    const order = await Order.findOneAndUpdate(
+      { _id: orderId, shop_id: shopId },
+      { accepted: accepted },
+      { new: true }
+    ).exec();
+    return res.json({
+      status: 1,
+      message: "success",
+      data: order,
+    });
+  } catch (err) {
+    console.log(err);
+    return next(new Error("internal error"));
+  }
+};

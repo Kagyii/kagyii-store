@@ -5,6 +5,7 @@ const orderSchema = new mongoose.Schema(
     items: { type: [Object], required: true },
     total_bill: { type: Number, required: true },
     accepted: { type: Boolean, default: false },
+    valid: { type: Boolean, default: true },
     customer_id: { type: mongoose.Types.ObjectId, required: true },
     shop_id: { type: mongoose.Types.ObjectId, required: true },
   },

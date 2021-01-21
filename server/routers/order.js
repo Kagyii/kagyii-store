@@ -4,7 +4,7 @@ import isMongoId from "validator/lib/isMongoId.js";
 
 import validateToken from "../middlewares/validate-token.js";
 import checkValidationError from "../middlewares/check-validation-error.js";
-import { create, get } from "../controllers/order.js";
+import { create, get, accept } from "../controllers/order.js";
 
 const router = express.Router();
 
@@ -55,6 +55,17 @@ router.get(
   validateToken,
   checkValidationError,
   get
+);
+
+router.patch(
+  "/:order_id",
+  [
+    validator.body("accepted").isBoolean().withMessage("Invalid order accept"),
+    validator.body("shop_id").isMongoId().withMessage("Invalid shop id"),
+  ],
+  validateToken,
+  checkValidationError,
+  accept
 );
 
 export default router;
