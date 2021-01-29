@@ -28,6 +28,12 @@ router.post(
       })
       .withMessage("invalid cart"),
     validator.body("total_bill").isInt().withMessage("invalid bill"),
+    validator.body("address").isString().withMessage("invalid address"),
+    validator
+      .body("customer_extra_info")
+      .optional()
+      .isString()
+      .withMessage("invalid extra information"),
   ],
   validateToken,
   checkValidationError,
@@ -62,6 +68,11 @@ router.patch(
   [
     validator.body("accepted").isBoolean().withMessage("Invalid order accept"),
     validator.body("shop_id").isMongoId().withMessage("Invalid shop id"),
+    validator
+      .body("shop_extra_info")
+      .optional()
+      .isString()
+      .withMessage("Invalid extra information"),
   ],
   validateToken,
   checkValidationError,

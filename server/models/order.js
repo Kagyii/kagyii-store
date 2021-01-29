@@ -6,8 +6,15 @@ const orderSchema = new mongoose.Schema(
     total_bill: { type: Number, required: true },
     accepted: { type: Boolean, default: false },
     valid: { type: Boolean, default: true },
-    customer_id: { type: mongoose.Types.ObjectId, required: true },
+    customer_id: {
+      type: mongoose.Types.ObjectId,
+      required: true,
+      ref: "user_profile",
+    },
     shop_id: { type: mongoose.Types.ObjectId, required: true },
+    address: { type: String, required: true },
+    customer_extra_info: { type: String },
+    shop_extra_info: { type: String },
   },
   { timestamps: true }
 );

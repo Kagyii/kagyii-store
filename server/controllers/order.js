@@ -2,11 +2,14 @@ import ShopItem from "../models/shop-item.js";
 import Order from "../models/order.js";
 
 export const create = async (req, res, next) => {
-  const userId = req.user_info.user_id;
   const cart = req.body.cart;
   const shopId = req.body.shop_id;
   const cartTotalBill = req.body.total_bill;
+  const address = req.body.address;
+  const customerExtraInfo = req.body.customer_extra_info;
+
   const nowDate = new Date();
+  const profileId = req.user_info.profile_id;
 
   const itemIds = [];
   cart.forEach((item) => {
@@ -57,19 +60,19 @@ export const create = async (req, res, next) => {
       return next(new Error("wrong total bill"));
     }
 
-    const order = new Order({
+    const order = await new Order({
       items: orderItems,
-      customer_id: userId,
+      customer_id: profileId,
       shop_id: shopId,
+      address: address,
+      customer_extra_info: customerExtraInfo || "",
       total_bill: totalBill,
-    });
-
-    const orderResult = await order.save();
+    }).save();
 
     return res.json({
       status: 1,
       message: "success",
-      data: orderResult,
+      data: order,
     });
   } catch (err) {
     console.log(err);
@@ -87,7 +90,7 @@ export const get = async (req, res, next) => {
   if (accType === "shop") {
     findWith.shop_id = req.user_info.shop_id;
   } else if (accType === "customer") {
-    findWith.customer_id = req.user_info.user_id;
+    findWith.customer_id = req.user_info.profile_id;
   }
 
   if (filter) {
@@ -104,6 +107,7 @@ export const get = async (req, res, next) => {
     const orders = await Order.find(findWith)
       .sort({ createdAt: -1 })
       .limit(pageSize)
+      .populate({ path: "customer_id", select: "name phone" })
       .exec();
     return res.json({
       status: 1,
@@ -140,15 +144,16 @@ export const accept = async (req, res, next) => {
   const orderId = req.params.order_id;
   const shopId = req.body.shop_id;
   const accepted = req.body.accepted;
+  const shopExtraInfo = req.body.shop_extra_info;
 
-  if (shopId !== req.user_info.shop_id) {
+  if (shopId != req.user_info.shop_id) {
     return next(new Error("not authorized shop"));
   }
 
   try {
     const order = await Order.findOneAndUpdate(
       { _id: orderId, shop_id: shopId },
-      { accepted: accepted },
+      { accepted: accepted, shop_extra_info: shopExtraInfo || "" },
       { new: true }
     ).exec();
     return res.json({
