@@ -9,23 +9,39 @@ export const createSession = async (req, res, next) => {
   const shopId = req.body.shop_id;
 
   try {
-    const chatSession = new ChatSession({
+    const chatSession = await new ChatSession({
       profile_id: profileId,
       shop_id: shopId,
-    });
-    const chatSessionDoc = await chatSession.save();
+    }).save();
 
     return res.json({
       status: 1,
       message: "success",
-      data: {
-        session_id: chatSessionDoc._id,
-        profile_id: chatSessionDoc.profile_id,
-        shop_id: chatSessionDoc.shop_id,
-      },
+      data: chatSession,
     });
   } catch (err) {
-    return next(new Error("db error"));
+    console.log(err);
+    return next(new Error("internal error"));
+  }
+};
+
+export const getSession = async (req, res, next) => {
+  const shopId = req.query.shop_id;
+  const profileId = req.query.profile_id;
+
+  try {
+    const chatSession = await ChatSession.findOne({
+      shop_id: shopId,
+      profile_id: profileId,
+    }).exec();
+    return res.json({
+      status: 1,
+      message: "success",
+      data: chatSession,
+    });
+  } catch (err) {
+    console.log(err);
+    return next(new Error("internal error"));
   }
 };
 
@@ -38,14 +54,14 @@ export const getSessions = async (req, res, next) => {
   const populateProfile = {};
 
   if (type === "user") {
-    if (id === req.user_info.profile_id) {
+    if (id == req.user_info.profile_id) {
       findWith.profile_id = id;
       populateProfile.path = "user_profile";
     } else {
       return next(new Error("authorization error"));
     }
   } else if (type === "shop") {
-    if (id === req.user_info.shop_id) {
+    if (id == req.user_info.shop_id) {
       findWith.shop_id = id;
       populateProfile.path = "shop_profile";
     } else {
@@ -58,7 +74,7 @@ export const getSessions = async (req, res, next) => {
   }
 
   try {
-    const chatSessionDocs = await ChatSession.find(findWith)
+    const chatSessions = await ChatSession.find(findWith)
       .sort({ createdAt: -1 })
       .limit(pageSize)
       .populate(populateProfile)
@@ -68,10 +84,10 @@ export const getSessions = async (req, res, next) => {
     return res.json({
       status: 1,
       message: "success",
-      data: chatSessionDocs,
+      data: chatSessions,
     });
   } catch (err) {
-    return next(new Error("db error"));
+    return next(new Error("internal error"));
   }
 };
 
@@ -105,12 +121,11 @@ export const sendMessage = async (req, res, next) => {
 
     chatData.message = message;
 
-    const chat = new Chat(chatData);
-    const chatDoc = await chat.save();
+    const chat = await new Chat(chatData).save();
 
     await ChatSession.updateOne(
       { _id: sessionId, profile_id: profileId, shop_id: shopId },
-      { chat_id: chatDoc._id }
+      { chat_id: chat._id }
     ).exec();
 
     return res.json({
@@ -118,7 +133,7 @@ export const sendMessage = async (req, res, next) => {
       message: "success",
     });
   } catch (err) {
-    return next(new Error("db error"));
+    return next(new Error("internal error"));
   }
 };
 
@@ -152,6 +167,6 @@ export const getMessage = async (req, res, next) => {
       data: chatDocs,
     });
   } catch (error) {
-    return next(new Error("db error"));
+    return next(new Error("internal error"));
   }
 };

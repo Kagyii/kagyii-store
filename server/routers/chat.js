@@ -5,6 +5,7 @@ import validateToken from "../middlewares/validate-token.js";
 import checkValidationError from "../middlewares/check-validation-error.js";
 import {
   createSession,
+  getSession,
   getSessions,
   sendMessage,
   getMessage,
@@ -37,6 +38,17 @@ router.get(
   checkValidationError,
   validateToken,
   getSessions
+);
+
+router.get(
+  "getSession",
+  [
+    validator.query("shop_id").isMongoId().withMessage("Invalid shop id"),
+    validator.query("profile_id").isMongoId().withMessage("Invalid profile id"),
+  ],
+  checkValidationError,
+  validateToken,
+  getSession
 );
 
 router.post(
