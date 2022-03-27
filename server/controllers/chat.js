@@ -1,5 +1,4 @@
 import { Chat, ChatSession } from "../models/chat.js";
-import ShopProfile from "../models/shop-profile.js";
 import { uploadImage } from "../aws/s3.js";
 
 const chatBucket = "kagyii-store-chat";

@@ -29,6 +29,8 @@ const shopSchema = new mongoose.Schema(
     cash_on_delivery: { type: Boolean, default: false },
     payment: { type: [Object] },
     delivery_info: { type: String },
+    rating: { type: Number, default: 0 },
+    rating_count: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
